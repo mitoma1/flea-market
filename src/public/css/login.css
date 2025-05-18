@@ -1,0 +1,91 @@
+/* ヘッダー */
+.header {
+    background-color: #000;
+    padding: 10px 20px;
+}
+
+.header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    height: 40px;
+}
+
+/* メイン中央揃え */
+.login-main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 60px); /* ヘッダーの高さを除く */
+    background-color: #f5f5f5;
+}
+
+/* ログインフォーム */
+.login-container {
+    background: #fff;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.login-container h2 {
+    margin-bottom: 20px;
+}
+
+/* フォーム */
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* ボタン */
+.btn-login {
+    width: 100%;
+    padding: 10px;
+    background-color: #f52a14;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* エラーメッセージ */
+.error-message {
+    color: red;
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+/* 会員登録リンク */
+.register-link {
+    margin-top: 20px;
+}
+
+.btn-register {
+    color: #333;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.btn-register:hover {
+    text-decoration: underline;
+}
