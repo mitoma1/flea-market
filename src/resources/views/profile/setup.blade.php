@@ -1,61 +1,91 @@
-<!DOCTYPE html>
-<html lang="ja">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <title>プロフィール設定</title>
-    <link rel="stylesheet" href="{{ asset('css/profile.css') }}">
-</head>
+@section('title', 'プロフィール設定')
 
-<body>
-    <div class="form-container">
-        <h2>プロフィール設定</h2>
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/profile.css') }}">
+@endpush
 
-        <form action="{{ route('profile.setup.store') }}" method="POST" enctype="multipart/form-data">
-            @csrf
+@section('content')
+<div class="max-w-2xl mx-auto bg-white p-8 rounded shadow-md">
+    <h2 class="text-2xl font-bold mb-6 text-center">プロフィール設定</h2>
 
-            <div class="avatar-wrapper">
-                <img id="avatarPreview" src="{{ asset('images/default-avatar.png') }}" class="avatar-preview" alt="プロフィール画像">
-                <input type="file" name="avatar" accept="image/*" onchange="previewImage(event)">
-            </div>
+    <form action="{{ route('profile.setup.store') }}" method="POST" enctype="multipart/form-data">
+        @csrf
 
-            <label for="username">ユーザー名</label>
-            <input type="text" name="username" value="{{ old('username') }}">
+        <div class="flex flex-col items-center mb-6">
+            <img id="avatarPreview"
+                src="{{ asset('images/default-avatar.png') }}"
+                class="w-32 h-32 rounded-full object-cover border mb-3"
+                alt="プロフィール画像">
+            <input type="file"
+                name="avatar"
+                accept="image/*"
+                onchange="previewImage(event)"
+                class="text-sm border rounded p-2 w-full">
+            @error('avatar')
+            <div class="text-red-600 mt-1 text-sm">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="mb-4">
+            <label for="username" class="block mb-1 font-medium">ユーザー名</label>
+            <input type="text"
+                name="username"
+                value="{{ old('username') }}"
+                class="w-full border rounded px-3 py-2">
             @error('username')
-            <div class="error">{{ $message }}</div>
+            <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
             @enderror
+        </div>
 
-            <label for="postal_code">郵便番号</label>
-            <input type="text" name="postal_code" value="{{ old('postal_code') }}">
+        <div class="mb-4">
+            <label for="postal_code" class="block mb-1 font-medium">郵便番号</label>
+            <input type="text"
+                name="postal_code"
+                value="{{ old('postal_code') }}"
+                class="w-full border rounded px-3 py-2">
             @error('postal_code')
-            <div class="error">{{ $message }}</div>
+            <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
             @enderror
+        </div>
 
-            <label for="address">住所</label>
-            <input type="text" name="address" value="{{ old('address') }}">
+        <div class="mb-4">
+            <label for="address" class="block mb-1 font-medium">住所</label>
+            <input type="text"
+                name="address"
+                value="{{ old('address') }}"
+                class="w-full border rounded px-3 py-2">
             @error('address')
-            <div class="error">{{ $message }}</div>
+            <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
             @enderror
+        </div>
 
-            <label for="building">建物名</label>
-            <input type="text" name="building" value="{{ old('building') }}">
+        <div class="mb-6">
+            <label for="building" class="block mb-1 font-medium">建物名</label>
+            <input type="text"
+                name="building"
+                value="{{ old('building') }}"
+                class="w-full border rounded px-3 py-2">
             @error('building')
-            <div class="error">{{ $message }}</div>
+            <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
             @enderror
+        </div>
 
-            <button type="submit" class="submit-btn">更新する</button>
-        </form>
-    </div>
+        <button type="submit"
+            class="w-full bg-black hover:bg-gray-800 text-white font-semibold py-3 rounded">
+            更新する
+        </button>
+    </form>
+</div>
 
-    <script>
-        function previewImage(event) {
-            const reader = new FileReader();
-            reader.onload = function() {
-                document.getElementById('avatarPreview').src = reader.result;
-            };
-            reader.readAsDataURL(event.target.files[0]);
-        }
-    </script>
-</body>
-
-</html>
+<script>
+    function previewImage(event) {
+        const reader = new FileReader();
+        reader.onload = function() {
+            document.getElementById('avatarPreview').src = reader.result;
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+</script>
+@endsection

@@ -1,102 +1,137 @@
-<!DOCTYPE html>
-<html lang="ja">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <title>{{ $product->name }} - 商品詳細</title>
-    <link rel="stylesheet" href="{{ asset('css/product_show.css') }}">
-</head>
+@section('title', $product->name . ' - 商品詳細')
 
-<body>
-    <header>
-        <div class="header-logo">
-            <img src="{{ asset('images/logo.svg') }}" alt="ロゴ" class="logo">
+@section('content')
+<link rel="stylesheet" href="{{ asset('css/product_show.css') }}">
+
+<div class="product-detail-wrapper">
+    <div class="product-detail-main">
+        <div class="product-image-area">
+            <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="product-main-image">
         </div>
 
-        <nav>
-            @auth
-            <a href="{{ route('mypage') }}">マイページ</a>
-            <a href="{{ route('products.index') }}">商品一覧</a>
-            <a href="{{ route('logout') }}"
-                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                ログアウト
-            </a>
-            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                @csrf
-            </form>
-            @else
-            <a href="{{ route('login') }}">ログイン</a>
-            <a href="{{ route('register') }}">新規登録</a>
-            @endauth
-        </nav>
-    </header>
+        <div class="product-info-area">
+            <h1 class="product-name">{{ $product->name }}</h1>
+            <p class="product-price">¥{{ number_format($product->price) }} <span class="tax-info">(税込)</span></p>
 
-    <main>
-        <div class="product-detail">
-            <div class="product-image">
-                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}">
-            </div>
-            <div class="product-info">
-                <h2 class="product-name">{{ $product->name }}</h2>
-                <p class="product-price">¥{{ number_format($product->price) }}</p>
-
-                <div class="action-buttons">
-                    <form action="{{ route('recommend', $product->id) }}" method="POST">
-                        @csrf
-                        <button type="submit">★ いいね</button>
-                    </form>
-                    <a href="#comment-form">
-                        <button type="button">💬 コメント</button>
-                    </a>
-                    <form action="{{ route('purchase', $product->id) }}" method="POST">
-                        @csrf
-                        <button type="submit" class="buy-button">購入手続き</button>
-                    </form>
-                </div>
-
-                <div class="product-description">
-                    <h3>商品説明</h3>
-                    <p>{{ $product->description }}</p>
-                </div>
-
-                <div class="product-meta">
-                    <h3>商品情報</h3>
-                    <dl>
-                        <dt>カテゴリー：</dt>
-                        <dd>{{ $product->category->name ?? '未設定' }}</dd>
-                        <dt>商品状態：</dt>
-                        <dd>{{ $product->condition ?? '不明' }}</dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
-
-        <div class="comment-section">
-            <h3>コメント</h3>
-
-            @forelse ($product->comments ?? [] as $comment)
-            <div class="comment">
-                <strong>{{ $comment->user->name ?? 'ユーザー' }}</strong>：
-                <p>{{ $comment->content }}</p>
-            </div>
-            @empty
-            <p>コメントはまだありません。</p>
-            @endforelse
-
-            @auth
-            <div class="comment-form" id="comment-form">
-                <form action="{{ route('comments.store', $product->id) }}" method="POST">
+            <div class="product-actions">
+                {{-- いいねボタンフォーム --}}
+                <form id="favorite-form" action="{{ route('favorites.toggle', $product->id) }}" method="POST">
                     @csrf
-                    <textarea name="content" placeholder="コメントを入力してください..." required></textarea>
-                    <br>
-                    <button type="submit">コメントを送信</button>
+                    <button type="submit" id="favorite-button" class="action-button favorite-button {{ auth()->user() && auth()->user()->favoriteProducts->contains($product->id) ? 'liked' : '' }}">
+                        <span class="icon">★</span> いいね
+                    </button>
+                    <span id="likes-count" class="likes-count">{{ $product->likedUsers->count() }}</span>
                 </form>
-            </div>
-            @else
-            <p><a href="{{ route('login') }}">ログイン</a>してコメントしましょう！</p>
-            @endauth
-        </div>
-    </main>
-</body>
 
-</html>
+                <a href="#comment-form" class="action-button comment-button">
+                    <span class="icon">💬</span> コメント
+                </a>
+            </div>
+
+            <a href="{{ route('products.purchase.show', ['id' => $product->id]) }}" class="purchase-button-link">
+                <button type="button" class="purchase-button">購入手続きへ</button>
+            </a>
+
+            <div class="product-description-area">
+                <h3 class="section-title">商品説明</h3>
+                <p class="description-text">{{ $product->description }}</p>
+            </div>
+
+            <div class="product-meta-area">
+                <h3 class="section-title">商品情報</h3>
+                <dl class="product-meta-list">
+                    <dt>カテゴリー：</dt>
+                    <dd>{{ $product->category->name ?? '未設定' }}</dd>
+
+                    <dt>商品状態：</dt>
+                    <dd>{{ $product->condition ?? '不明' }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    {{-- コメントセクション --}}
+    <div class="comment-section mt-10">
+        <h3 class="section-title">コメント（{{ $product->comments->count() }}）</h3>
+
+        {{-- コメント一覧 --}}
+        @forelse ($product->comments ?? [] as $comment)
+        <div class="comment flex items-start bg-gray-100 p-4 rounded-lg mb-4">
+            {{-- ユーザーアイコンの代用 --}}
+            <div class="w-10 h-10 bg-gray-300 rounded-full flex-shrink-0 mr-4"></div>
+            <div>
+                <p class="font-semibold text-gray-800">{{ $comment->user->name ?? 'ユーザー' }}</p>
+                <p class="text-gray-600 mt-1">{{ $comment->comment }}</p>
+            </div>
+        </div>
+        @empty
+        <p class="no-comments-message text-gray-500">コメントはまだありません。</p>
+        @endforelse
+
+        {{-- コメント投稿フォーム --}}
+        @auth
+        <div class="comment-form-area mt-6" id="comment-form">
+            <form action="{{ route('comments.store', $product->id) }}" method="POST" class="comment-form">
+                @csrf
+                <label for="comment" class="block text-sm font-medium text-gray-700 mb-1">商品へのコメント</label>
+                <textarea name="comment" id="comment" rows="4" class="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-red-400" placeholder="コメントを入力してください...">{{ old('comment') }}</textarea>
+                @error('comment')
+                <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                @enderror
+                <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 mt-2">
+                    コメントを送信
+                </button>
+            </form>
+        </div>
+        @else
+        <p class="login-prompt mt-4">
+            <a href="{{ route('login') }}" class="text-blue-600 underline">ログイン</a>してコメントしましょう！
+        </p>
+        @endauth
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const favoriteForm = document.getElementById('favorite-form');
+        const favoriteButton = document.getElementById('favorite-button');
+        const likesCount = document.getElementById('likes-count');
+
+        if (favoriteForm) {
+            favoriteForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                fetch(favoriteForm.action, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({})
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('通信エラー');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.status === 'liked') {
+                            favoriteButton.classList.add('liked');
+                        } else {
+                            favoriteButton.classList.remove('liked');
+                        }
+                        likesCount.textContent = data.likes_count;
+                    })
+                    .catch(error => {
+                        console.error('エラー:', error);
+                        alert('通信に失敗しました');
+                    });
+            });
+        }
+    });
+</script>
+@endsection

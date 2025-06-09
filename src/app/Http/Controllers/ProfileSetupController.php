@@ -14,12 +14,12 @@ class ProfileSetupController extends Controller
 
     public function store(Request $request)
     {
-        $user = Auth::user(); // Ensure this returns an instance of App\Models\User
+        $user = Auth::user();
         if (!$user instanceof \App\Models\User) {
             abort(500, 'Authenticated user is not a valid User model instance.');
         }
 
-        // バリデーション（簡易）
+        // バリデーション
         $request->validate([
             'name' => 'required|string|max:255',
             'postcode' => 'required|string|max:10',
@@ -28,7 +28,7 @@ class ProfileSetupController extends Controller
             'image' => 'nullable|image|max:2048',
         ]);
 
-        // プロフィール画像があれば保存
+        // プロフィール画像の保存
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('profile_images', 'public');
             $user->profile_image = $path;
@@ -41,6 +41,22 @@ class ProfileSetupController extends Controller
         $user->building = $request->input('building');
         $user->save();
 
-        return redirect()->route('mypage')->with('success', 'プロフィールを更新しました');
+        // ✅ 商品一覧画面へ遷移（成功メッセージ付き）
+        return redirect()->route('products.index')->with('success', 'プロフィールを更新しました');
+    }
+
+    public function show()
+    {
+        $user = Auth::user();
+        $listedProducts = $user->listedProducts ?? collect();
+        $purchasedProducts = $user->purchasedProducts ?? collect();
+        $products = $listedProducts->merge($purchasedProducts);
+
+        return view('mypage.profile', compact('user', 'listedProducts', 'purchasedProducts', 'products'));
+    }
+    public function edit()
+    {
+        $user = Auth::user(); // ログインユーザーを取得
+        return view('profile.edit', compact('user'));
     }
 }

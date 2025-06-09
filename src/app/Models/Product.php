@@ -33,4 +33,18 @@ class Product extends Model
     {
         return $this->hasMany(Comment::class);
     }
+
+    public function likedUsers()
+    {
+        return $this->belongsToMany(User::class, 'favorite_product_user')->withTimestamps();
+    }
+    public function purchasedUsers()
+    {
+        // 購入履歴用の中間テーブル名はUserモデルと同じ 'product_user_purchases' を想定
+        return $this->belongsToMany(User::class, 'product_user_purchases')->withTimestamps();
+    }
+    public function isSold()
+    {
+        return $this->purchasedUsers()->exists();
+    }
 }

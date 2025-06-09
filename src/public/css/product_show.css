@@ -1,79 +1,345 @@
-/* ヘッダー上部の黒い線（背景） */
-header {
-    background-color: #000;
-    color: #fff;
-    padding: 10px 20px;
+/* 全体のリセットと基本設定 */
+body { /* app.blade.phpのbodyスタイルを尊重するため、ここでのbodyスタイルは最小限に */
+font-family: 'Helvetica Neue', Arial, sans-serif;
+line-height: 1.6;
+color: #333;
+/* background-color: #f8f8f8; <- app.blade.phpで設定済み */
+margin: 0;
+/* padding: 20px; <- app.blade.phpのmainでpy-6があるので、ここで全体のpaddingは不要 */
 }
 
-header h1 {
-    margin: 0;
+/* product-detail-wrapper の中央寄せと基本的なスタイル */
+.product-detail-wrapper {
+background-color: #fff;
+border-radius: 8px;
+box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+max-width: 960px; /* Figmaの幅に近い値に設定 */
+width: 100%;
+padding: 30px;
+box-sizing: border-box; /* paddingをwidthに含める */
+margin: 0 auto; /* 左右中央寄せ。app.blade.phpのmainのpy-6で上下の余白は確保される */
 }
 
-nav a {
-    color: #fff;
-    margin-right: 15px;
-    text-decoration: none;
+/* その他のCSSは前回の内容をそのまま使用 */
+/* 商品詳細メインエリア (画像と情報のレイアウト) */
+.product-detail-main {
+display: flex;
+gap: 30px; /* 画像と情報の間隔 */
+margin-bottom: 40px;
+flex-wrap: wrap; /* 小さい画面で折り返す */
 }
 
-/* 商品詳細レイアウト */
-.product-detail {
-    display: flex;
-    gap: 30px;
-    padding: 30px;
+/* 商品画像エリア */
+.product-image-area {
+flex: 1; /* 利用可能なスペースを均等に占める */
+min-width: 300px; /* 画像エリアの最小幅 */
+display: flex;
+justify-content: center;
+align-items: flex-start;
 }
 
-/* 左に画像 */
-.product-image img {
-    width: 300px;
-    height: auto;
-    border: 1px solid #ccc;
+.product-main-image {
+max-width: 100%;
+height: auto;
+border-radius: 6px;
+box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
 }
 
-/* 右に情報 */
-.product-info {
-    flex: 1;
+/* 商品情報エリア */
+.product-info-area {
+flex: 2; /* 画像エリアよりも広いスペースを占める */
+min-width: 400px; /* 情報エリアの最小幅 */
+}
+
+.product-name {
+font-size: 2.2em; /* Figmaのテキストサイズを考慮 */
+font-weight: 700;
+margin-bottom: 10px;
+color: #222;
 }
 
 .product-price {
-    font-size: 24px;
-    font-weight: bold;
-    margin-top: 0;
+font-size: 1.8em;
+font-weight: 600;
+color: #e60023; /* フリマアプリの価格の色 */
+margin-bottom: 20px;
 }
 
-.action-buttons {
-    margin: 20px 0;
+.product-price .tax-info {
+font-size: 0.6em;
+color: #666;
+font-weight: normal;
+vertical-align: middle;
+margin-left: 5px;
 }
 
-.action-buttons form,
-.action-buttons a {
-    display: inline-block;
-    margin-right: 10px;
+/* アクションボタン（いいね、コメント） */
+.product-actions {
+display: flex;
+gap: 15px;
+margin-bottom: 30px;
 }
 
-.product-description,
-.product-meta {
-    margin-top: 20px;
+.action-button {
+background-color: #f0f0f0;
+border: 1px solid #ddd;
+border-radius: 5px;
+padding: 10px 20px;
+font-size: 1em;
+cursor: pointer;
+display: inline-flex;
+align-items: center;
+gap: 8px;
+transition: background-color 0.2s ease;
+color: #333;
+text-decoration: none; /* aタグの場合 */
 }
 
-/* コメント関連 */
+.action-button:hover {
+background-color: #e5e5e5;
+}
+
+.action-button .icon {
+font-size: 1.2em;
+}
+
+.favorite-button.liked {
+background-color: #ffcccc;
+color: #cc0000;
+border-color: #ff9999;
+}
+
+.likes-count {
+font-size: 0.9em;
+color: #666;
+margin-left: 5px;
+}
+
+
+/* 購入手続きボタン */
+.purchase-button-link {
+display: block; /* ボタン全体をブロック要素にする */
+margin-bottom: 40px;
+text-decoration: none;
+}
+
+.purchase-button {
+width: 100%; /* 親要素の幅いっぱいに広げる */
+padding: 15px 25px;
+background-color: #e60023; /* メインカラー */
+color: #fff;
+border: none;
+border-radius: 6px;
+font-size: 1.2em;
+font-weight: 600;
+cursor: pointer;
+transition: background-color 0.3s ease;
+box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.purchase-button:hover {
+background-color: #c9001b;
+}
+
+/* セクションタイトル */
+.section-title {
+font-size: 1.5em;
+font-weight: 600;
+margin-top: 30px;
+margin-bottom: 15px;
+color: #222;
+border-bottom: 2px solid #eee;
+padding-bottom: 5px;
+}
+
+/* 商品説明 */
+.product-description-area {
+margin-bottom: 30px;
+}
+
+.description-text {
+font-size: 1em;
+line-height: 1.8;
+color: #555;
+white-space: pre-wrap; /* 改行を保持 */
+}
+
+/* 商品情報（メタデータ） */
+.product-meta-area {
+margin-bottom: 40px;
+}
+
+.product-meta-list {
+display: grid;
+grid-template-columns: auto 1fr; /* 左をコンテンツ幅、右を残りの幅 */
+gap: 10px 15px;
+font-size: 0.95em;
+color: #555;
+}
+
+.product-meta-list dt {
+font-weight: 600;
+color: #333;
+}
+
+.product-meta-list dd {
+margin-left: 0;
+}
+
+/* コメントセクション */
 .comment-section {
-    margin: 40px 30px;
+margin-top: 40px;
+border-top: 1px solid #eee;
+padding-top: 30px;
 }
 
 .comment {
-    background: #f4f4f4;
-    padding: 10px;
-    margin-bottom: 10px;
+background-color: #fdfdfd;
+border: 1px solid #f0f0f0;
+border-radius: 6px;
+padding: 15px;
+margin-bottom: 15px;
+box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
-textarea {
+.comment-user {
+font-weight: 700;
+color: #333;
+margin-bottom: 5px;
+display: block;
+}
+
+.comment-content {
+font-size: 0.95em;
+color: #555;
+line-height: 1.5;
+}
+
+.no-comments-message {
+text-align: center;
+color: #777;
+padding: 20px;
+border: 1px dashed #ddd;
+border-radius: 5px;
+margin-bottom: 30px;
+}
+
+/* コメントフォーム */
+.comment-form-area {
+margin-top: 30px;
+padding-top: 20px;
+border-top: 1px solid #eee;
+}
+
+.comment-form {
+display: flex;
+flex-direction: column;
+gap: 15px;
+}
+
+.comment-textarea {
+width: 100%;
+min-height: 100px;
+padding: 15px;
+border: 1px solid #ddd;
+border-radius: 6px;
+font-size: 1em;
+box-sizing: border-box; /* paddingをwidthに含める */
+resize: vertical; /* 縦方向のみリサイズ可能 */
+}
+
+.comment-textarea:focus {
+outline: none;
+border-color: #a0a0a0;
+box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.submit-comment-button {
+background-color: #007bff; /* 青系のボタン */
+color: #fff;
+padding: 12px 25px;
+border: none;
+border-radius: 6px;
+font-size: 1.1em;
+font-weight: 600;
+cursor: pointer;
+transition: background-color 0.3s ease;
+align-self: flex-end; /* 右寄せ */
+}
+
+.submit-comment-button:hover {
+background-color: #0056b3;
+}
+
+.login-prompt {
+text-align: center;
+margin-top: 30px;
+font-size: 1.1em;
+color: #555;
+}
+
+.login-link {
+color: #007bff;
+text-decoration: none;
+font-weight: 600;
+}
+
+.login-link:hover {
+text-decoration: underline;
+}
+
+/* エラーメッセージ */
+.error-message {
+color: #e60023;
+font-size: 0.9em;
+margin-top: -10px;
+margin-bottom: 10px;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+.product-detail-main {
+    flex-direction: column; /* 縦並びにする */
+    gap: 20px;
+}
+
+.product-image-area,
+.product-info-area {
+    min-width: unset; /* 最小幅を解除 */
+    width: 100%; /* 全幅にする */
+}
+
+.product-detail-wrapper {
+    padding: 20px;
+}
+
+.product-name {
+    font-size: 1.8em;
+}
+
+.product-price {
+    font-size: 1.5em;
+}
+
+.purchase-button,
+.submit-comment-button {
+    font-size: 1em;
+    padding: 10px 20px;
+}
+}
+
+@media (max-width: 480px) {
+.product-detail-wrapper {
+    padding: 15px;
+}
+
+.product-actions {
+    flex-direction: column;
+    gap: 10px;
+}
+
+.action-button {
     width: 100%;
-    height: 80px;
-    padding: 10px;
-    margin-top: 10px;
+    justify-content: center;
 }
-
-button {
-    padding: 8px 12px;
-    margin-top: 10px;
 }

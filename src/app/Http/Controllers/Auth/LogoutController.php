@@ -1,18 +1,19 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Auth;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class LogoutController extends Controller
 {
-    // ログアウト処理
     public function logout(Request $request)
     {
-        auth()->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        auth()->logout(); // ユーザーのログアウト
+        $request->session()->invalidate(); // セッションを無効にする
+        $request->session()->regenerateToken(); // CSRFトークンを再生成
 
-        return redirect('/'); // Redirect to the desired location after logout
+        // 🔽 ログイン画面へリダイレクト（login.blade.phpに対応するルート）
+        return redirect()->route('login');
     }
 }

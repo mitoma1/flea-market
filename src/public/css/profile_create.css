@@ -1,0 +1,23 @@
+.tab-active {
+    color: #e60000; /* 赤色 */
+    border-bottom: 2px solid #e60000;
+    font-weight: bold;
+}
+
+.tab-inactive {
+    color: #999;
+}
+
+.edit-button {
+    border: 1px solid #e60000;
+    color: #e60000;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: white;
+    transition: all 0.3s ease;
+}
+
+.edit-button:hover {
+    background-color: #ffe5e5;
+}

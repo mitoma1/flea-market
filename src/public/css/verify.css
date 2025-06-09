@@ -1,0 +1,40 @@
+.verify-container {
+    text-align: center;
+    padding: 100px 20px;
+    font-family: 'Arial', sans-serif;
+    background-color: #ffffff;
+}
+
+.verify-message {
+    font-size: 20px;
+    margin-bottom: 30px;
+    color: #333;
+    border: 1px solid red;
+    padding: 20px;
+    display: inline-block;
+    line-height: 1.6;
+}
+
+.verify-button {
+    background-color: #e0e0e0;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.verify-button:hover {
+    background-color: #cfcfcf;
+}
+
+.resend-link {
+    margin-top: 20px;
+}
+
+.resend-link a {
+    color: #007BFF;
+    text-decoration: underline;
+    font-size: 14px;
+}
