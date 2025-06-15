@@ -21,19 +21,20 @@
         <a href="{{ route('mypage.profile.edit') }}" class="border border-red-500 text-red-500 px-4 py-1 rounded hover:bg-red-100">
             プロフィールを編集
         </a>
+
     </div>
 
-    {{-- タブ切り替えリンク（UIそのまま） --}}
+    {{-- タブ切り替えリンク --}}
     <div class="flex justify-center mb-4 space-x-4">
-        <button id="selling-tab" class="text-red-500 font-bold border-b-2 border-red-500 px-4 py-2">
+        <button id="selling-tab" class="text-red-500 font-bold border-b-2 border-red-500 px-4 py-2" type="button">
             出品した商品
         </button>
-        <button id="purchased-tab" class="text-gray-600 px-4 py-2 hover:text-black border-b-2 border-transparent">
+        <button id="purchased-tab" class="text-gray-600 px-4 py-2 hover:text-black border-b-2 border-transparent" type="button">
             購入した商品
         </button>
     </div>
 
-    {{-- 出品した商品 --}}
+    {{-- 出品した商品一覧 --}}
     <div id="selling-products" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         @forelse ($sellingProducts as $product)
         <div class="border rounded-lg overflow-hidden shadow hover:shadow-lg transition">
@@ -48,7 +49,7 @@
         @endforelse
     </div>
 
-    {{-- 購入した商品 --}}
+    {{-- 購入した商品一覧 --}}
     <div id="purchased-products" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 hidden">
         @forelse ($purchasedProducts as $product)
         <div class="border rounded-lg overflow-hidden shadow hover:shadow-lg transition">
@@ -62,9 +63,10 @@
         <p class="text-center col-span-full text-gray-500">購入した商品はありません。</p>
         @endforelse
     </div>
+
 </div>
 
-{{-- JavaScript --}}
+{{-- タブ切り替え用スクリプト --}}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const sellingTab = document.getElementById('selling-tab');
@@ -72,7 +74,7 @@
         const sellingProducts = document.getElementById('selling-products');
         const purchasedProducts = document.getElementById('purchased-products');
 
-        sellingTab.addEventListener('click', function() {
+        sellingTab.addEventListener('click', () => {
             sellingProducts.classList.remove('hidden');
             purchasedProducts.classList.add('hidden');
 
@@ -83,7 +85,7 @@
             purchasedTab.classList.add('text-gray-600', 'border-transparent');
         });
 
-        purchasedTab.addEventListener('click', function() {
+        purchasedTab.addEventListener('click', () => {
             purchasedProducts.classList.remove('hidden');
             sellingProducts.classList.add('hidden');
 

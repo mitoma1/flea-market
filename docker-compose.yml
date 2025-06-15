@@ -1,7 +1,9 @@
 
 
-services:
-  nginx:
+ 
+
+services: # <-- このインデントレベル
+  nginx: # <-- ここから他のサービスと同じインデントレベル（例：半角スペース2つ）
     image: nginx:1.21.1
     ports:
       - "80:80"
@@ -11,14 +13,14 @@ services:
     depends_on:
       - php
 
-  php:
+  php: # <-- 他のサービスと同じインデントレベル
     build: ./docker/php
     volumes:
       - ./src:/var/www/
 
-  mysql:
+  mysql: # <-- 他のサービスと同じインデントレベル
     image: mysql:8.0.26
-    platform: linux/amd64 
+    platform: linux/amd64
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: laravel_db
@@ -30,7 +32,7 @@ services:
       - ./docker/mysql/data:/var/lib/mysql
       - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
 
-  phpmyadmin:
+  phpmyadmin: # <-- 他のサービスと同じインデントレベル
     image: phpmyadmin/phpmyadmin
     environment:
       - PMA_ARBITRARY=1
@@ -41,3 +43,15 @@ services:
       - mysql
     ports:
       - 8080:80
+
+  mailhog: # <-- ★ここを、他のサービス（nginx, phpなど）と全く同じインデントレベルに揃えます。
+    image: mailhog/mailhog:latest # mailhog よりさらにインデント（例：半角スペース4つ）
+    ports: # mailhog よりさらにインデント
+      - "1025:1025" # ports の要素は、ports よりさらにインデント（例：半角スペース6つ）
+      - "8025:8025"
+    networks: # mailhog よりさらにインデント
+      - default # networks の要素は、networks よりさらにインデント
+
+networks: # <-- ★ここを、services: と同じインデントレベル（一番左端）に揃えます。
+  default: # networks: よりさらにインデント（例：半角スペース2つ）
+    # 既存のネットワーク設定があればここに記述

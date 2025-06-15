@@ -28,6 +28,8 @@ class CategorySeeder extends Seeder
             ['name' => 'アクセサリー'],
             ['name' => 'おもちゃ'],
             ['name' => 'ベビー・キッズ'],
+            ['name' => 'その他'],
+
 
         ];
 

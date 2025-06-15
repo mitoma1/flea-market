@@ -43,7 +43,15 @@
                 <h3 class="section-title">商品情報</h3>
                 <dl class="product-meta-list">
                     <dt>カテゴリー：</dt>
-                    <dd>{{ $product->category->name ?? '未設定' }}</dd>
+                    <dd>
+                        @if($product->categories->isEmpty())
+                        未設定
+                        @else
+                        @foreach($product->categories as $category)
+                        {{ $category->name }}@if(!$loop->last)、@endif
+                        @endforeach
+                        @endif
+                    </dd>
 
                     <dt>商品状態：</dt>
                     <dd>{{ $product->condition ?? '不明' }}</dd>

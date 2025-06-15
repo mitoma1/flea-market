@@ -23,14 +23,14 @@
     <!-- おすすめ一覧 -->
     <div x-show="tab === 'recommended'" class="grid grid-cols-2 md:grid-cols-4 gap-6">
         @forelse ($products as $product)
-        <div class="bg-white rounded shadow p-4 relative">
-            <a href="{{ route('products.show', $product->id) }}">
+        <div class="relative bg-white rounded shadow p-4 overflow-hidden">
+            <a href="{{ route('products.show', $product->id) }}" class="block">
                 <div class="relative">
                     <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
                         class="w-full h-40 object-cover rounded mb-2">
                     @if ($product->isSold())
-                    <div class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
-                        SOLD
+                    <div class="absolute inset-0 bg-black bg-opacity-60 flex justify-center items-center z-20">
+                        <span class="text-white text-4xl font-extrabold tracking-widest select-none">SOLD</span>
                     </div>
                     @endif
                 </div>
@@ -47,14 +47,14 @@
     <div x-show="tab === 'favorites'" class="grid grid-cols-2 md:grid-cols-4 gap-6">
         @auth
         @forelse ($favorites as $product)
-        <div class="bg-white rounded shadow p-4 relative">
-            <a href="{{ route('products.show', $product->id) }}">
+        <div class="relative bg-white rounded shadow p-4 overflow-hidden">
+            <a href="{{ route('products.show', $product->id) }}" class="block">
                 <div class="relative">
                     <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
                         class="w-full h-40 object-cover rounded mb-2">
                     @if ($product->isSold())
-                    <div class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
-                        SOLD
+                    <div class="absolute inset-0 bg-black bg-opacity-60 flex justify-center items-center z-20">
+                        <span class="text-white text-4xl font-extrabold tracking-widest select-none">SOLD</span>
                     </div>
                     @endif
                 </div>

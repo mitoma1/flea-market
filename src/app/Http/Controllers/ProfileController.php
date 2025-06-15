@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Product;
-use App\Models\Purchase;
 
 class ProfileController extends Controller
 {
@@ -17,18 +16,19 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
 
+        if (!$user instanceof \App\Models\User) {
+            abort(500, 'Authenticated user is not a valid User model instance.');
+        }
+
         // 出品した商品
         $sellingProducts = Product::where('user_id', $user->id)
             ->latest()
             ->get();
 
-        // 購入した商品（purchaseテーブル経由）
-        $purchasedProducts = Purchase::with('product')
-            ->where('user_id', $user->id)
+        // 購入した商品（productsテーブルのbuyer_idで判定）
+        $purchasedProducts = Product::where('buyer_id', $user->id)
             ->latest()
-            ->get()
-            ->pluck('product')
-            ->filter(); // null を除外
+            ->get();
 
         return view('mypage.profile', compact('user', 'sellingProducts', 'purchasedProducts'));
     }
@@ -77,6 +77,6 @@ class ProfileController extends Controller
         $user->building = $request->input('building');
         $user->save();
 
-        return redirect()->route('mypage.profile')->with('success', 'プロフィールを更新しました');
+        return redirect()->route('products.index')->with('success', 'プロフィールを更新しました');
     }
 }
