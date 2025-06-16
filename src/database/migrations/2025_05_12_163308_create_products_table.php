@@ -14,16 +14,15 @@ class CreateProductsTable extends Migration
     public function up()
     {
         Schema::create('products', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // 出品者
-            $table->foreignId('category_id')->constrained()->onDelete('cascade'); // カテゴリ
-            $table->string('name');   // 商品名
-            $table->string('brand')->nullable();  // ブランド（任意）
-            $table->string('condition'); // 商品状態（新品、目立った傷なし、など）
-            $table->text('description'); // 商品説明
-            $table->integer('price');   // 価格
-            $table->string('image');    // 商品画像のパス
-            $table->timestamps();      // 作成日時、更新日時
+            $table->bigIncrements('id');
+            $table->foreignId('user_id')->after('id');
+            $table->string('name');            // 商品名
+            $table->string('brand')->nullable(); // ブランド名（任意）
+            $table->string('condition');       // 状態（例: 新品・中古）
+            $table->text('description');       // 商品説明
+            $table->integer('price');          // 価格
+            $table->string('image');           // 商品画像のパス
+            $table->timestamps();              // created_at / updated_at
         });
     }
 

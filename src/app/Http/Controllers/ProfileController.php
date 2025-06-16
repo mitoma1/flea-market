@@ -26,9 +26,7 @@ class ProfileController extends Controller
             ->get();
 
         // 購入した商品（productsテーブルのbuyer_idで判定）
-        $purchasedProducts = Product::where('buyer_id', $user->id)
-            ->latest()
-            ->get();
+        $purchasedProducts = collect();
 
         return view('mypage.profile', compact('user', 'sellingProducts', 'purchasedProducts'));
     }

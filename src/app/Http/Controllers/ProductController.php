@@ -41,7 +41,6 @@ class ProductController extends Controller
             $imageName = basename($path);
         }
 
-        // 商品登録（category_idは多対多なので除外）
         $product = Product::create([
             'user_id'     => auth()->id(),
             'image'       => $imageName,
@@ -52,9 +51,7 @@ class ProductController extends Controller
             'price'       => $validated['price'],
         ]);
 
-        // カテゴリー多対多の中間テーブルに保存（category_idは配列想定）
         if (isset($validated['category_id'])) {
-            // category_idが単数なら配列に変換するか sync でそのまま
             $categories = is_array($validated['category_id']) ? $validated['category_id'] : [$validated['category_id']];
             $product->categories()->sync($categories);
         }
@@ -62,22 +59,19 @@ class ProductController extends Controller
         return redirect()->route('products.index')->with('status', '商品を出品しました！');
     }
 
-    // 商品詳細表示（categoriesを eager load）
+    // 商品詳細表示
     public function show($id)
     {
         $product = Product::with('categories')->findOrFail($id);
         return view('products.show', compact('product'));
     }
 
-    // 商品購入画面表示（住所セッション対応）
+    // 商品購入画面表示
     public function showPurchase($id)
     {
         $product = Product::findOrFail($id);
 
-        if ($product->buyer_id !== null) {
-            return redirect()->back()->withErrors(['status' => 'この商品はすでに購入されています']);
-        }
-
+        // 住所初期値（セッション）
         $address = session('address') ?? [
             'postal_code' => 'XXX-YYYY',
             'address'     => 'ここには住所と建物が入ります',
@@ -90,7 +84,7 @@ class ProductController extends Controller
         return view('purchase', compact('product', 'address'));
     }
 
-    // 購入処理
+    // 購入処理（buyer_id カラムなし）
     public function purchaseStore(Request $request)
     {
         $request->validate([
@@ -101,20 +95,13 @@ class ProductController extends Controller
             'payment_method.required' => '支払い方法を選択してください',
         ]);
 
+        // 商品の取得のみ（購入状態は管理しない）
         $product = Product::findOrFail($request->product_id);
-
-        if ($product->buyer_id !== null) {
-            return back()->withErrors(['status' => 'この商品はすでに購入されています']);
-        }
-
-        // 購入者情報を更新（buyer_id）
-        $product->buyer_id = auth()->id();
-        $product->save();
 
         return redirect()->route('products.index')->with('status', '購入が完了しました！');
     }
 
-    // コメント投稿処理
+    // コメント投稿
     public function commentStore(CommentRequest $request, $productId)
     {
         Comment::create([
@@ -127,7 +114,7 @@ class ProductController extends Controller
             ->with('message', 'コメントを投稿しました！');
     }
 
-    // いいねトグル処理（Ajax）
+    // いいねトグル（Ajax）
     public function toggleFavorite(Product $product)
     {
         $user = Auth::user();
@@ -145,7 +132,7 @@ class ProductController extends Controller
         ]);
     }
 
-    // マイページ（出品商品と購入商品を表示）
+    // マイページ（出品商品のみ表示）
     public function mypage()
     {
         $user = Auth::user();
@@ -154,27 +141,10 @@ class ProductController extends Controller
             ->latest()
             ->paginate(8);
 
-        $purchasedProducts = Product::where('buyer_id', $user->id)
-            ->latest()
-            ->paginate(8);
-
-        return view('mypage.index', compact('user', 'sellingProducts', 'purchasedProducts'));
+        return view('mypage.index', compact('user', 'sellingProducts'));
     }
 
-    // 購入キャンセル
-    public function cancelPurchase(Product $product)
-    {
-        if ($product->buyer_id !== auth()->id()) {
-            abort(403, '不正な操作です');
-        }
-
-        $product->buyer_id = null;
-        $product->save();
-
-        return redirect()->route('mypage')->with('status', '購入をキャンセルしました');
-    }
-
-    // 住所編集画面表示
+    // 住所編集画面
     public function editAddress()
     {
         $address = session('address', [
@@ -186,7 +156,7 @@ class ProductController extends Controller
         return view('edit_address', compact('address'));
     }
 
-    // 住所更新処理
+    // 住所更新
     public function updateAddress(Request $request)
     {
         $validated = $request->validate([

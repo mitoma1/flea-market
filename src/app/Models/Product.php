@@ -16,7 +16,7 @@ class Product extends Model
     // 保存可能なカラム
     protected $fillable = [
         'user_id',
-        'buyer_id',
+
         'category_id',  // ※多対多であれば不要な場合あり。使ってるなら残す
         'name',
         'brand',
@@ -24,7 +24,7 @@ class Product extends Model
         'description',
         'price',
         'image',
-        'is_sold',
+
     ];
 
     /**
@@ -48,7 +48,7 @@ class Product extends Model
      */
     public function likedUsers()
     {
-        return $this->belongsToMany(User::class, 'favorite_product_user')->withTimestamps();
+        return $this->belongsToMany(User::class, 'favorite_product_users')->withTimestamps();
     }
 
     /**
@@ -64,7 +64,7 @@ class Product extends Model
      */
     public function isSold(): bool
     {
-        return !is_null($this->buyer_id);
+        return $this->purchase()->exists();
     }
 
     /**
@@ -72,6 +72,6 @@ class Product extends Model
      */
     public function categories()
     {
-        return $this->belongsToMany(Category::class);
+        return $this->belongsToMany(Category::class, 'category_products')->withTimestamps();
     }
 }

@@ -4,16 +4,22 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Category;
-use Illuminate\Support\Facades\DB; // DBファサードを使用する場合は必要
+use Illuminate\Support\Facades\DB;
 
 class CategorySeeder extends Seeder
 {
     public function run()
     {
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');  // 外部キー制約オフ
-        Category::truncate(); // 全てのカテゴリーデータを削除
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');  // 外部キー制約オン
+        // 外部キー制約を一時的にオフにする（MySQLの場合）
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
+        // 既存データを削除
+        Category::truncate();
+
+        // 外部キー制約をオンに戻す
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+        // 登録したいカテゴリーの配列
         $categories = [
             ['name' => 'ファッション'],
             ['name' => '家電'],
@@ -29,10 +35,9 @@ class CategorySeeder extends Seeder
             ['name' => 'おもちゃ'],
             ['name' => 'ベビー・キッズ'],
             ['name' => 'その他'],
-
-
         ];
 
+        // 1件ずつ作成
         foreach ($categories as $category) {
             Category::create($category);
         }

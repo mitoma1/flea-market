@@ -14,10 +14,15 @@ class CreatePurchasesTable extends Migration
     public function up()
     {
         Schema::create('purchases', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements('id');
+
+            // ユーザーと商品の外部キー
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->string('payment');
+
+            // 支払い方法（必要ならそのまま）
+            $table->string('payment')->nullable(); // ← optional
+
             $table->timestamps();
         });
     }

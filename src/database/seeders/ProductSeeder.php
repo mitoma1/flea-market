@@ -16,8 +16,6 @@ class ProductSeeder extends Seeder
                 'price' => 15000,
                 'condition' => 'コンディション良好',
                 'description' => 'スタイリッシュなデザインのメンズ腕時計',
-                'user_id' => 1,
-                'category_id' => 1,
             ],
             [
                 'name' => 'HDD',
@@ -25,8 +23,6 @@ class ProductSeeder extends Seeder
                 'price' => 5000,
                 'condition' => '目立った傷や汚れなし',
                 'description' => '高速で信頼性の高いハードディスク',
-                'user_id' => 1,
-                'category_id' => 2,
             ],
             [
                 'name' => '玉ねぎ3束',
@@ -34,8 +30,6 @@ class ProductSeeder extends Seeder
                 'price' => 300,
                 'condition' => 'やや傷や汚れあり',
                 'description' => '新鮮な玉ねぎ３玉のセット',
-                'user_id' => 1,
-                'category_id' => 5,
             ],
             [
                 'name' => '革靴',
@@ -43,8 +37,6 @@ class ProductSeeder extends Seeder
                 'price' => 4000,
                 'condition' => '状態が悪い',
                 'description' => 'クラシックなデザインの革靴',
-                'user_id' => 1,
-                'category_id' => 1,
             ],
             [
                 'name' => 'ノートPC',
@@ -52,8 +44,6 @@ class ProductSeeder extends Seeder
                 'price' => 45000,
                 'condition' => 'コンディション良好',
                 'description' => '高性能なノートパソコン',
-                'user_id' => 1,
-                'category_id' => 2,
             ],
             [
                 'name' => 'マイク',
@@ -61,8 +51,6 @@ class ProductSeeder extends Seeder
                 'price' => 8000,
                 'condition' => '目立った傷や汚れなし',
                 'description' => '高音質のレコーディング用マイク',
-                'user_id' => 1,
-                'category_id' => 2,
             ],
             [
                 'name' => 'ショルダーバッグ',
@@ -70,8 +58,6 @@ class ProductSeeder extends Seeder
                 'price' => 3500,
                 'condition' => 'やや傷や汚れあり',
                 'description' => 'おしゃれなショルダーバッグ',
-                'user_id' => 1,
-                'category_id' => 1,
             ],
             [
                 'name' => 'タンブラー',
@@ -79,8 +65,6 @@ class ProductSeeder extends Seeder
                 'price' => 500,
                 'condition' => '状態が悪い',
                 'description' => '使いやすいタンブラー',
-                'user_id' => 1,
-                'category_id' => 5,
             ],
             [
                 'name' => 'コーヒーミル',
@@ -88,8 +72,6 @@ class ProductSeeder extends Seeder
                 'price' => 4000,
                 'condition' => 'コンディション良好',
                 'description' => '手動のコーヒーミル',
-                'user_id' => 1,
-                'category_id' => 5,
             ],
             [
                 'name' => 'メイクセット',
@@ -97,8 +79,6 @@ class ProductSeeder extends Seeder
                 'price' => 2500,
                 'condition' => '目立った傷や汚れなし',
                 'description' => '便利なメイクアップセット',
-                'user_id' => 1,
-                'category_id' => 5,
             ],
         ]);
     }

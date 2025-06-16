@@ -13,7 +13,9 @@ class UserSeeder extends Seeder
         DB::table('users')->insert([
             'name' => 'テストユーザー',
             'email' => 'test@example.com',
-            'password' => Hash::make('password'),
+            'password' => bcrypt('password'),
+            'postcode' => '123-4567',
+            'address' => '東京都新宿区1-2-3',
         ]);
     }
 }
