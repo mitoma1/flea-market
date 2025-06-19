@@ -1,7 +1,7 @@
 #環境構築
 Dockerビルド
 
-1.https://github.com/mitoma1/flea-market.git
+1.git clone git@github.com/mitoma1/test-weight3-.git
 2.DockerDesktopアプリを立ち上げる
 3.docker-compose up -d --build
 
