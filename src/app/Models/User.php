@@ -12,48 +12,51 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
-        'nickname',           // ← 追加
-        'is_profile_setup',   // ← 追加
+        'nickname',
+        'is_profile_setup',
+        'postcode',
+        'address',
+        'building',
+        'profile_image',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    /**
+     * 出品商品（1対多）
+     */
     public function products()
     {
         return $this->hasMany(Product::class);
     }
+
+    /**
+     * お気に入り商品（多対多）
+     * 中間テーブル名は favorite_product_users
+     */
     public function favoriteProducts()
     {
         return $this->belongsToMany(Product::class, 'favorite_product_users')->withTimestamps();
     }
+
+    /**
+     * 購入商品（多対多: purchases 経由）
+     */
     public function purchasedProducts()
     {
-        // 購入履歴用の中間テーブル名を 'product_user_purchases' として想定
-        return $this->belongsToMany(Product::class, 'product_user_purchases')->withTimestamps();
+        return $this->belongsToMany(Product::class, 'purchases', 'user_id', 'product_id')
+            ->withTimestamps()
+            ->withPivot('payment'); // payment 情報も取得可能
     }
 }

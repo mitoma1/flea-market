@@ -41,7 +41,7 @@
         </div>
     </div>
 
-    <form method="POST" action="{{ route('purchase') }}">
+    <form method="POST" action="{{ route('purchase.store', ['product' => $product->id]) }}">
         @csrf
         <input type="hidden" name="product_id" value="{{ $product->id ?? '' }}">
 

@@ -4,7 +4,7 @@
 <div class="form-container max-w-lg mx-auto bg-white p-8 rounded shadow-md">
     <h2 class="text-2xl font-semibold mb-6">プロフィール設定</h2>
 
-    <form action="{{ route('profile.setup.store') }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('mypage.profile.update') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
         <div class="avatar-wrapper mb-6 flex flex-col items-center">

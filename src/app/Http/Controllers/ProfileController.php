@@ -25,12 +25,11 @@ class ProfileController extends Controller
             ->latest()
             ->get();
 
-        // 購入した商品（productsテーブルのbuyer_idで判定）
-        $purchasedProducts = collect();
+        // ✅ 購入した商品（リレーションから取得）
+        $purchasedProducts = $user->purchasedProducts()->latest()->get();
 
         return view('mypage.profile', compact('user', 'sellingProducts', 'purchasedProducts'));
     }
-
     /**
      * プロフィール編集画面表示
      */

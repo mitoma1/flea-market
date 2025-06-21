@@ -7,10 +7,12 @@ use App\Http\Controllers\ProfileSetupController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\MypageController;
-use App\Http\Controllers\ProfileController; // ✅ ProfileController も必要に応じて
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PurchaseController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 
+// 登録・ログイン関連
 Route::get('/register', [RegisterController::class, 'show'])->name('register');
 Route::post('/register', [RegisterController::class, 'register'])->name('register.submit');
 
@@ -18,10 +20,9 @@ Route::get('/email/verify', function () {
     return view('auth.verify-email');
 })->middleware('auth')->name('verification.notice');
 
-// ✅ 変更点: メール認証後のリダイレクト先を '/profile/setup' に変更
 Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill(); // 認証処理を実行
-    return redirect('/profile/setup'); // ✅ ここを '/profile/setup' に変更
+    $request->fulfill();
+    return redirect('/profile/setup');
 })->middleware(['auth', 'signed'])->name('verification.verify');
 
 Route::post('/email/verification-notification', function (Request $request) {
@@ -33,44 +34,39 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
 Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
 
-
-
-
-// プロフィール初期設定
-// ✅ 'verified' ミドルウェアをここに追加し、メール認証が完了したユーザーのみがこの画面にアクセスできるようにします
+// プロフィール初期設定（メール認証後のみアクセス可能にしたい場合は 'verified' ミドルウェア追加）
 Route::get('/profile/setup', [ProfileSetupController::class, 'create'])->name('profile.setup');
 Route::post('/profile/setup', [ProfileSetupController::class, 'store'])->name('profile.setup.store');
 
-
-
-// 商品一覧（明示的なルートは削除）
+// 商品関連
 Route::resource('products', ProductController::class);
 
-// マイページトップ
+// マイページ
 Route::get('/mypage', [ProfileController::class, 'show'])->name('mypage');
-
-// プロフィール表示（詳細表示）
 Route::get('/mypage/profile', [ProfileController::class, 'show'])->name('mypage.profile');
-
-// プロフィール編集フォーム
 Route::get('/mypage/profile/edit', [ProfileController::class, 'edit'])->name('mypage.profile.edit');
-
-// プロフィール更新処理
 Route::post('/mypage/profile/update', [ProfileController::class, 'update'])->name('mypage.profile.update');
 
-// マイリスト（お気に入りや出品など）
+// マイリスト・お気に入りなど
 Route::get('/mylist', [ProductController::class, 'myList'])->name('mylist');
-// 商品詳細・購入・おすすめ・コメント
+
+// 商品詳細・購入ページ
 Route::get('/products/{id}/purchase', [ProductController::class, 'showPurchase'])->name('products.purchase.show');
-Route::post('/purchase', [ProductController::class, 'purchaseStore'])->name('purchase');
-Route::post('/products/{product}/favorite', [ProductController::class, 'toggleFavorite'])->name('favorites.toggle');
-Route::post('/products/{product}/comments', [ProductController::class, 'commentStore'])->name('comments.store');
 Route::get('/purchase/confirm', [ProductController::class, 'purchaseConfirm'])->name('purchase.confirm');
 
+// ✅ 購入処理は PurchaseController へ移動
+Route::post('/purchase/{product}', [PurchaseController::class, 'store'])->name('purchase.store');
+
+// お気に入り登録・コメント
+Route::post('/products/{product}/favorite', [ProductController::class, 'toggleFavorite'])->name('favorites.toggle');
+Route::post('/products/{product}/comments', [ProductController::class, 'commentStore'])->name('comments.store');
+
+// 購入キャンセル
 Route::post('/mypage/cancel/{product}', [ProductController::class, 'cancelPurchase'])->name('mypage.cancel');
 
 // 住所変更
 Route::get('/address/edit', [ProductController::class, 'editAddress'])->name('address.edit');
 Route::post('/address/update', [ProductController::class, 'updateAddress'])->name('address.update');
 
+// おすすめページ（仮）
 Route::get('/recommend', fn() => 'おすすめ商品ページ')->name('recommend.index');

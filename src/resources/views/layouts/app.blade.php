@@ -30,6 +30,7 @@
                 <input
                     type="text"
                     name="search"
+                    value="{{ request('search') }}"
                     placeholder="なにをお探しですか？"
                     class="w-full px-3 py-2 rounded border text-black" />
             </form>

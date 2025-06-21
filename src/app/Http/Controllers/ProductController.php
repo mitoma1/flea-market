@@ -12,10 +12,19 @@ use App\Models\Comment;
 
 class ProductController extends Controller
 {
-    // 商品一覧表示（ページネーションあり）
-    public function index()
+    // 商品一覧表示（ページネーション + 検索機能）
+    public function index(Request $request)
     {
-        $products = Product::paginate(8);
+        $query = Product::query();
+
+        // 🔍 商品名で部分一致検索（検索欄の name="search" に対応）
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        // ページネーション（検索語もURLに含める）
+        $products = $query->paginate(8)->appends($request->query());
+
         $favorites = auth()->check()
             ? auth()->user()->favoriteProducts()->get()
             : collect();
@@ -37,8 +46,7 @@ class ProductController extends Controller
 
         $imageName = null;
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('public/images');
-            $imageName = basename($path);
+            $imageName = $request->file('image')->store('images', 'public');
         }
 
         $product = Product::create([
@@ -46,13 +54,13 @@ class ProductController extends Controller
             'image'       => $imageName,
             'condition'   => $validated['condition'],
             'name'        => $validated['name'],
-            'brand'       => $validated['brand'],
+            'brand'       => $validated['brand'] ?? null,
             'description' => $validated['description'],
             'price'       => $validated['price'],
         ]);
 
-        if (isset($validated['category_id'])) {
-            $categories = is_array($validated['category_id']) ? $validated['category_id'] : [$validated['category_id']];
+        if (isset($validated['category_ids'])) {
+            $categories = is_array($validated['category_ids']) ? $validated['category_ids'] : [$validated['category_ids']];
             $product->categories()->sync($categories);
         }
 
@@ -71,7 +79,6 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($id);
 
-        // 住所初期値（セッション）
         $address = session('address') ?? [
             'postal_code' => 'XXX-YYYY',
             'address'     => 'ここには住所と建物が入ります',
@@ -95,7 +102,6 @@ class ProductController extends Controller
             'payment_method.required' => '支払い方法を選択してください',
         ]);
 
-        // 商品の取得のみ（購入状態は管理しない）
         $product = Product::findOrFail($request->product_id);
 
         return redirect()->route('products.index')->with('status', '購入が完了しました！');

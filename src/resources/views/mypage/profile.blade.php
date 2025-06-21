@@ -21,7 +21,6 @@
         <a href="{{ route('mypage.profile.edit') }}" class="border border-red-500 text-red-500 px-4 py-1 rounded hover:bg-red-100">
             プロフィールを編集
         </a>
-
     </div>
 
     {{-- タブ切り替えリンク --}}

@@ -4,10 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\User;
-use App\Models\Category;
-use App\Models\Comment;
-use App\Models\Purchase;
 
 class Product extends Model
 {
@@ -16,19 +12,17 @@ class Product extends Model
     // 保存可能なカラム
     protected $fillable = [
         'user_id',
-
-        'category_id',  // ※多対多であれば不要な場合あり。使ってるなら残す
+        'category_id',  // もし多対多なら別途 categories() リレーションで対応
         'name',
         'brand',
         'condition',
         'description',
         'price',
         'image',
-
     ];
 
     /**
-     * 出品者（ユーザー）とのリレーション
+     * 出品者（User）とのリレーション（多対1）
      */
     public function user()
     {
@@ -36,7 +30,7 @@ class Product extends Model
     }
 
     /**
-     * コメントとのリレーション
+     * コメントとのリレーション（1対多）
      */
     public function comments()
     {
@@ -44,7 +38,8 @@ class Product extends Model
     }
 
     /**
-     * お気に入り（いいね）したユーザーとのリレーション（多対多）
+     * お気に入りしたユーザーとのリレーション（多対多）
+     * 中間テーブル名は favorite_product_users
      */
     public function likedUsers()
     {
