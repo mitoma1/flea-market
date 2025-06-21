@@ -1,3 +1,5 @@
+＃coachtechフリマ
+
 #環境構築
 Dockerビルド
 
@@ -19,7 +21,42 @@ DB_DATABASE=laravel_db
 DB_USERNAME=laravel_user
 DB_PASSWORD=laravel_pass
 
-#使用技術(実行環境) PHP7.4.9 Laravel8.83.8 MySQL8.0.26
+#使用技術(実行環境) 
+PHP7.4.9 Laravel8.83.8 MySQL8.0.26
+
+## メール認証
+
+ユーザー登録後にメールアドレス認証が必須です。  
+開発環境では Mailhog を使って確認ができます。
+
+### 設定内容
+
+１User.php に implements MustVerifyEmail を追加
+２、Fortify の機能により /email/verify にリダイレクト
+３、認証メールは Mailhog で確認可能
+
+  ### Mailhog 設定（.env）
+MAIL_MAILER=smtp
+MAIL_HOST=mailhog
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS=info@example.com
+MAIL_FROM_NAME="${APP_NAME}"
+
+　Mailhog： http://localhost:8025  
+　認証後は /mypage/profile に自動遷移
+
+ ## 検索機能
+
+### 商品検索（ヘッダーに実装）
+
+商品名での部分一致検索が可能
+ページネーション中も検索キーワードを保持
+検索ワードはヘッダー内の検索欄に反映されます
+
+
 
 ＃ER図
 ![ER図](./docs/erd.drawio.png)
