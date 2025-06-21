@@ -46,7 +46,7 @@ MAIL_FROM_ADDRESS=info@example.com
 MAIL_FROM_NAME="${APP_NAME}"
 
 　Mailhog： http://localhost:8025  
-　認証後は /mypage/profile に自動遷移
+　認証後は /profile/setup に自動遷移
 
  ## 検索機能
 
