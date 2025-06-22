@@ -45,7 +45,8 @@ class ExhibitionRequest extends FormRequest
             'image.mimes' => '画像は.jpegまたは.png形式でアップロードしてください',
 
             'category_ids.required' => 'カテゴリーを選択してください',
-            'category_ids.integer' => 'カテゴリーを正しく選択してください',
+            'category_ids.*.integer' => 'カテゴリーを正しく選択してください',
+            'category_ids.*.exists' => '選択されたカテゴリーが存在しません',
 
             'condition.required' => '商品の状態を選択してください',
 

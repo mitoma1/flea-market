@@ -44,6 +44,7 @@
                 <dl class="product-meta-list">
                     <dt>カテゴリー：</dt>
                     <dd>
+
                         @if($product->categories->isEmpty())
                         未設定
                         @else

@@ -5,8 +5,8 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\ProfileSetupController;
 use App\Http\Controllers\Auth\LogoutController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\MypageController;
+use App\Http\Controllers\ProductController;;
+
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PurchaseController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
