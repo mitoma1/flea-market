@@ -15,7 +15,7 @@ class CreateProductsTable extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->foreignId('user_id')->after('id');
+            $table->foreignId('user_id');
             $table->string('name');            // 商品名
             $table->string('brand')->nullable(); // ブランド名（任意）
             $table->string('condition');       // 状態（例: 新品・中古）
