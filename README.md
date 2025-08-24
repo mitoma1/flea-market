@@ -47,6 +47,24 @@ MAIL_FROM_NAME="${APP_NAME}"
 
 　Mailhog： http://localhost:8025  
 　認証後は /profile/setup に自動遷移
+ 
+＃データベース初期化・ダミーデータ投入
+1,マイグレーションを実行
+php artisan migrate
+2,Seederでダミーデータを投入
+php artisan db:seed
+
+＃初期投入されるダミーデータ
+ユーザー（usersテーブル）
+名前	メールアドレス	
+佐藤	sato@example.com
+	パスワードpassword123
+鈴木	suzuki@example.com
+	パスワードpassword123
+森山	moriyama@example.com
+	パスワードpassword123
+＃商品・取引データ
+.各ユーザーに複数の商品を登録済み
 
  ## 検索機能
 
