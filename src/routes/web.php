@@ -12,6 +12,9 @@ use App\Http\Controllers\PurchaseController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 
+use App\Http\Controllers\TradeController;
+
+
 // 登録・ログイン関連
 Route::get('/register', [RegisterController::class, 'show'])->name('register');
 Route::post('/register', [RegisterController::class, 'register'])->name('register.submit');
@@ -70,3 +73,19 @@ Route::post('/address/update', [ProductController::class, 'updateAddress'])->nam
 
 // おすすめページ（仮）
 Route::get('/recommend', fn() => 'おすすめ商品ページ')->name('recommend.index');
+/// 取引チャット画面
+Route::get('/trades/{trade}', [TradeController::class, 'show'])->name('trades.show');
+
+// メッセージ送信
+Route::post('/trades/{trade}/messages', [TradeController::class, 'storeMessage'])->name('messages.store');
+
+// 取引完了
+Route::post('/trades/{trade}/complete', [TradeController::class, 'complete'])->name('trades.complete');
+// メッセージ編集画面
+Route::get('/messages/{message}/edit', [TradeController::class, 'editMessage'])->name('messages.edit');
+
+// メッセージ更新
+Route::put('/messages/{message}', [TradeController::class, 'updateMessage'])->name('messages.update');
+
+// メッセージ削除
+Route::delete('/messages/{message}', [TradeController::class, 'destroyMessage'])->name('messages.destroy');
