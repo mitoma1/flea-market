@@ -12,9 +12,7 @@ use App\Mail\TradeCompletedMail;
 
 class TradeController extends Controller
 {
-    /**
-     * 取引チャット画面表示
-     */
+    // 取引チャット画面
     public function show(Trade $trade)
     {
         $trade->load('product.user', 'buyer', 'messages.user');
@@ -29,7 +27,7 @@ class TradeController extends Controller
         $messages = $trade->messages()->orderBy('created_at')->get();
         $product = $trade->product;
 
-        $alreadyRated = TradeRating::where('product_id', $product->id)
+        $alreadyRatedByMe = TradeRating::where('product_id', $product->id)
             ->where('rater_user_id', Auth::id())
             ->exists();
 
@@ -49,14 +47,12 @@ class TradeController extends Controller
             'partner',
             'messages',
             'product',
-            'alreadyRated',
+            'alreadyRatedByMe',
             'sidebarTrades'
         ));
     }
 
-    /**
-     * メッセージ送信
-     */
+    // メッセージ送信
     public function storeMessage(Request $request, Trade $trade)
     {
         $request->validate([
@@ -79,12 +75,14 @@ class TradeController extends Controller
         return back()->withInput();
     }
 
+    // メッセージ編集
     public function editMessage(TradeMessage $message)
     {
         if ($message->user_id !== Auth::id()) abort(403);
         return view('trades.edit_message', compact('message'));
     }
 
+    // メッセージ更新
     public function updateMessage(Request $request, TradeMessage $message)
     {
         if ($message->user_id !== Auth::id()) abort(403);
@@ -109,6 +107,7 @@ class TradeController extends Controller
             ->with('success', 'メッセージを更新しました');
     }
 
+    // メッセージ削除
     public function destroyMessage(TradeMessage $message)
     {
         if ($message->user_id !== Auth::id()) abort(403);
@@ -121,9 +120,7 @@ class TradeController extends Controller
         return back()->with('success', 'メッセージを削除しました');
     }
 
-    /**
-     * 取引完了・評価送信
-     */
+    // 取引完了・評価送信
     public function complete(Request $request, Trade $trade)
     {
         $request->validate([
@@ -151,24 +148,18 @@ class TradeController extends Controller
             'rating' => $request->rating,
         ]);
 
-        // 購入者 or 出品者の完了状態を分ける
         if (Auth::id() === $trade->buyer_id) {
             $trade->buyer_completed = true;
+            Mail::to($product->user->email)->send(new TradeCompletedMail($trade));
         } else {
             $trade->seller_completed = true;
         }
 
-        // 両者完了で status を completed にする
         if ($trade->buyer_completed && $trade->seller_completed) {
             $trade->status = 'completed';
         }
 
         $trade->save();
-
-        // メール送信（購入者完了でも送信してOK）
-        if ($product) {
-            Mail::to($product->user->email)->send(new TradeCompletedMail($trade));
-        }
 
         return redirect()->route('products.index')
             ->with('success', '取引完了＆評価を送信しました');

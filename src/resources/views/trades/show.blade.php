@@ -9,8 +9,7 @@
         <ul class="space-y-2">
             @foreach($sidebarTrades as $t)
             <li>
-                <a href="{{ route('trades.show', $t->id) }}"
-                    class="block bg-white p-3 rounded-lg shadow hover:bg-gray-100">
+                <a href="{{ route('trades.show', $t->id) }}" class="block bg-white p-3 rounded-lg shadow hover:bg-gray-100">
                     <div class="flex items-center">
                         <img src="{{ $t->product->image_url ?? 'https://via.placeholder.com/50x50' }}"
                             alt="商品画像"
@@ -55,14 +54,11 @@
                 @php
                 $isBuyer = auth()->id() === $trade->buyer_id;
                 $isSeller = auth()->id() === $trade->product->user_id;
-                $alreadyRatedByMe = \App\Models\TradeRating::where('product_id', $product->id)
-                ->where('rater_user_id', auth()->id())
-                ->exists();
                 @endphp
 
                 {{-- 購入者: 自分未完了 & 未評価 --}}
                 @if($isBuyer && !$alreadyRatedByMe && !$trade->buyer_completed)
-                <button type="button" id="completeTradeButton"
+                <button type="button" id="completeTradeButtonBuyer"
                     class="bg-red-500 text-white px-5 py-3 rounded hover:bg-red-600 font-semibold">
                     取引を完了する
                 </button>
@@ -70,7 +66,7 @@
 
                 {{-- 出品者: 購入者完了済み & 自分未完了 & 未評価 --}}
                 @if($isSeller && $trade->buyer_completed && !$trade->seller_completed && !$alreadyRatedByMe)
-                <button type="button" id="completeTradeButton"
+                <button type="button" id="completeTradeButtonSeller"
                     class="bg-red-500 text-white px-5 py-3 rounded hover:bg-red-600 font-semibold">
                     取引を評価する
                 </button>
@@ -161,7 +157,8 @@
         {{-- 星評価 --}}
         <div class="flex justify-center mb-6" id="starRating">
             @for ($i = 1; $i <= 5; $i++)
-                <svg class="w-10 h-10 cursor-pointer star-icon {{ $i <= 3 ? 'text-yellow-400' : 'text-gray-300' }} fill-current" data-rating="{{ $i }}" viewBox="0 0 24 24">
+                <svg class="w-10 h-10 cursor-pointer star-icon {{ $i <= 3 ? 'text-yellow-400' : 'text-gray-300' }} fill-current"
+                data-rating="{{ $i }}" viewBox="0 0 24 24">
                 <path d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279-7.416-3.908-7.416 3.908 1.48-8.279-6.064-5.828 8.332-1.151z" />
                 </svg>
                 @endfor
@@ -180,8 +177,8 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // 完了モーダル
-        const completeTradeButton = document.getElementById('completeTradeButton');
+        const completeTradeButtonBuyer = document.getElementById('completeTradeButtonBuyer');
+        const completeTradeButtonSeller = document.getElementById('completeTradeButtonSeller');
         const completionModal = document.getElementById('completionModal');
         const sendReviewButton = document.getElementById('sendReviewButton');
         const tradeCompletionForm = document.getElementById('tradeCompletionForm');
@@ -212,8 +209,14 @@
             });
         });
 
-        if (completeTradeButton) {
-            completeTradeButton.addEventListener('click', function() {
+        if (completeTradeButtonBuyer) {
+            completeTradeButtonBuyer.addEventListener('click', function() {
+                completionModal.classList.remove('hidden');
+            });
+        }
+
+        if (completeTradeButtonSeller) {
+            completeTradeButtonSeller.addEventListener('click', function() {
                 completionModal.classList.remove('hidden');
             });
         }
@@ -233,7 +236,7 @@
             });
         }
 
-        // メッセージ編集モーダル
+        // メッセージ編集
         const editButtons = document.querySelectorAll('.edit-message-btn');
         editButtons.forEach(button => {
             button.addEventListener('click', function() {

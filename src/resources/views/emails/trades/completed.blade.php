@@ -1,12 +1,11 @@
 @component('mail::message')
 # 取引完了のお知らせ
 
-{{ $trade->product->name }} の取引が完了しました。
+{{ $trade->product->user->name }} 様
 
-@component('mail::button', ['url' => route('trades.show', $trade->id)])
-取引画面を見る
-@endcomponent
+あなたの商品「{{ $trade->product->name }}」の取引が完了しました。
 
-今後ともよろしくお願いいたします。
+購入者: {{ $trade->buyer->name }}
+価格: ¥{{ number_format($trade->product->price) }}
 
 @endcomponent
