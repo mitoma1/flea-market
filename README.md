@@ -86,6 +86,13 @@ php artisan db:seed
 ページネーション中も検索キーワードを保持
 検索ワードはヘッダー内の検索欄に反映されます
 
+商品画像について
+
+商品画像は src/public/images/ に格納されています。
+そのため、Laravel 標準の php artisan storage:link コマンドは不要です。
+
+clone 後はそのままアプリを起動すれば商品画像が表示されます。
+
 
 
 ＃ER図
