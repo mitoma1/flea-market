@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\TradeMessageRequest;
 use App\Models\Trade;
 use App\Models\TradeMessage;
 use App\Models\TradeRating;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\TradeCompletedMail;
+use App\Models\User;
 
 class TradeController extends Controller
 {
@@ -17,26 +19,25 @@ class TradeController extends Controller
     {
         $trade->load('product.user', 'buyer', 'messages.user');
 
-        $partner = null;
-        if ($trade->product && Auth::id() === $trade->product->user_id) {
-            $partner = $trade->buyer;
-        } elseif ($trade->product) {
-            $partner = $trade->product->user;
-        }
+        $partner = Auth::id() === $trade->product->user_id
+            ? $trade->buyer
+            : $trade->product->user;
 
         $messages = $trade->messages()->orderBy('created_at')->get();
         $product = $trade->product;
 
-        $alreadyRatedByMe = TradeRating::where('product_id', $product->id)
+        // 自分が評価済みかどうか判定
+        $alreadyRatedByMe = TradeRating::where('trade_id', $trade->id)
             ->where('rater_user_id', Auth::id())
             ->exists();
+
+        // 相手のユーザーが受けた評価の平均を取得（プロフィール用）
+        $partnerRating = TradeRating::where('rated_user_id', $partner->id)->avg('rating');
 
         $sidebarTrades = Trade::with('product', 'buyer')
             ->where(function ($query) {
                 $query->where('buyer_id', Auth::id())
-                    ->orWhereHas('product', function ($q) {
-                        $q->where('user_id', Auth::id());
-                    });
+                    ->orWhereHas('product', fn($q) => $q->where('user_id', Auth::id()));
             })
             ->where('id', '<>', $trade->id)
             ->where('status', '!=', 'completed')
@@ -48,22 +49,18 @@ class TradeController extends Controller
             'messages',
             'product',
             'alreadyRatedByMe',
-            'sidebarTrades'
+            'sidebarTrades',
+            'partnerRating'
         ));
     }
 
     // メッセージ送信
-    public function storeMessage(Request $request, Trade $trade)
+    public function storeMessage(TradeMessageRequest $request, Trade $trade)
     {
-        $request->validate([
-            'body' => 'required|max:400',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif',
-        ]);
-
         $data = [
             'trade_id' => $trade->id,
-            'user_id' => Auth::id(),
-            'body' => $request->body,
+            'user_id'  => Auth::id(),
+            'body'     => $request->body,
         ];
 
         if ($request->hasFile('image')) {
@@ -75,29 +72,15 @@ class TradeController extends Controller
         return back()->withInput();
     }
 
-    // メッセージ編集
-    public function editMessage(TradeMessage $message)
-    {
-        if ($message->user_id !== Auth::id()) abort(403);
-        return view('trades.edit_message', compact('message'));
-    }
-
     // メッセージ更新
-    public function updateMessage(Request $request, TradeMessage $message)
+    public function updateMessage(TradeMessageRequest $request, TradeMessage $message)
     {
         if ($message->user_id !== Auth::id()) abort(403);
-
-        $request->validate([
-            'body' => 'required|max:400',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif',
-        ]);
 
         $message->body = $request->body;
 
         if ($request->hasFile('image')) {
-            if ($message->image) {
-                \Storage::disk('public')->delete($message->image);
-            }
+            if ($message->image) \Storage::disk('public')->delete($message->image);
             $message->image = $request->file('image')->store('trade_images', 'public');
         }
 
@@ -112,11 +95,9 @@ class TradeController extends Controller
     {
         if ($message->user_id !== Auth::id()) abort(403);
 
-        if ($message->image) {
-            \Storage::disk('public')->delete($message->image);
-        }
-
+        if ($message->image) \Storage::disk('public')->delete($message->image);
         $message->delete();
+
         return back()->with('success', 'メッセージを削除しました');
     }
 
@@ -133,7 +114,8 @@ class TradeController extends Controller
             ? $product->user_id
             : $trade->buyer_id;
 
-        $alreadyRated = TradeRating::where('product_id', $product->id)
+        // すでに評価済みかチェック
+        $alreadyRated = TradeRating::where('trade_id', $trade->id)
             ->where('rater_user_id', Auth::id())
             ->exists();
 
@@ -141,27 +123,39 @@ class TradeController extends Controller
             return back()->with('info', 'すでに評価済みです');
         }
 
+        // 評価を作成
         TradeRating::create([
-            'product_id' => $product->id,
-            'rater_user_id' => Auth::id(),
-            'rated_user_id' => $ratedUserId,
-            'rating' => $request->rating,
+            'trade_id'       => $trade->id,
+            'product_id'     => $product->id,
+            'rater_user_id'  => Auth::id(),
+            'rated_user_id'  => $ratedUserId,
+            'rating'         => $request->rating,
         ]);
 
+        // 取引完了フラグの更新
         if (Auth::id() === $trade->buyer_id) {
             $trade->buyer_completed = true;
+
+            // 購入者完了時に出品者へメール送信
             Mail::to($product->user->email)->send(new TradeCompletedMail($trade));
         } else {
             $trade->seller_completed = true;
         }
 
+        // 両者完了ならステータスを completed に
         if ($trade->buyer_completed && $trade->seller_completed) {
             $trade->status = 'completed';
         }
 
         $trade->save();
 
-        return redirect()->route('products.index')
-            ->with('success', '取引完了＆評価を送信しました');
+        // 相手のプロフィールの平均評価を更新
+        $ratedUser = User::find($ratedUserId);
+        $averageRating = TradeRating::where('rated_user_id', $ratedUserId)->avg('rating');
+        $ratedUser->average_rating = $averageRating; // users テーブルに average_rating カラムがある場合
+        $ratedUser->save();
+
+        // 評価送信後は商品一覧画面へ遷移
+        return redirect()->route('products.index')->with('success', '取引完了＆評価を送信しました');
     }
 }

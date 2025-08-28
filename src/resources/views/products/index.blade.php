@@ -26,7 +26,7 @@
         <div class="relative bg-white rounded shadow p-4 overflow-hidden">
             <a href="{{ route('products.show', $product->id) }}" class="block">
                 <div class="relative">
-                    <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
+                    <img src="{{ asset('images/' . basename($product->image)) }}" alt="{{ $product->name }}"
                         class="w-full h-40 object-cover rounded mb-2">
                     @if ($product->isSold())
                     <div class="absolute inset-0 bg-black bg-opacity-60 flex justify-center items-center z-20">
@@ -50,7 +50,7 @@
         <div class="relative bg-white rounded shadow p-4 overflow-hidden">
             <a href="{{ route('products.show', $product->id) }}" class="block">
                 <div class="relative">
-                    <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
+                    <img src="{{ asset('images/' . basename($product->image)) }}" alt="{{ $product->name }}"
                         class="w-full h-40 object-cover rounded mb-2">
                     @if ($product->isSold())
                     <div class="absolute inset-0 bg-black bg-opacity-60 flex justify-center items-center z-20">

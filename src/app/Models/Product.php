@@ -18,7 +18,7 @@ class Product extends Model
         'condition',
         'description',
         'price',
-        'image',
+        'image', // public/images/配下
         'status',
     ];
 
@@ -28,7 +28,7 @@ class Product extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    // 購入者（取引相手）
+    // 購入者
     public function buyer()
     {
         return $this->belongsTo(User::class, 'buyer_id');
@@ -64,19 +64,23 @@ class Product extends Model
         return $this->belongsToMany(Category::class, 'category_products')->withTimestamps();
     }
 
-    // 取引メッセージ（1商品に複数メッセージ）
+    // 取引メッセージ
     public function messages()
     {
         return $this->hasMany(Message::class);
     }
 
-    // ✅ 商品画像のURLを返すアクセサ
+    // 商品画像URL（アクセサ）修正版
     public function getImageUrlAttribute()
     {
-        return $this->image
-            ? asset('storage/' . $this->image)
-            : asset('images/default-product.png'); // デフォルト画像
+        if (!$this->image) {
+            return asset('images/default-product.png');
+        }
+
+        $filename = basename($this->image); // フルパスからファイル名を取り出す
+        return asset('images/' . $filename);
     }
+
     // 商品に紐づく取引
     public function trade()
     {

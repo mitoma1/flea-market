@@ -21,7 +21,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'postcode',
         'address',
         'building',
-        'profile_image',
+        'profile_image', // public/images/ に置く場合
     ];
 
     protected $hidden = [
@@ -53,12 +53,15 @@ class User extends Authenticatable implements MustVerifyEmail
             ->withPivot('payment');
     }
 
-    // プロフィール画像URL
+    // プロフィール画像URL（アクセサ）
     public function getProfileImageUrlAttribute()
     {
-        return $this->profile_image
-            ? asset('storage/' . $this->profile_image)
-            : asset('images/default-profile.png');
+        if (!$this->profile_image) {
+            return asset('images/default-profile.png');
+        }
+
+        $filename = basename($this->profile_image);
+        return asset('images/' . $filename);
     }
 
     // 取引

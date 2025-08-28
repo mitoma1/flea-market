@@ -8,7 +8,7 @@
 <div class="product-detail-wrapper">
     <div class="product-detail-main">
         <div class="product-image-area">
-            <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="product-main-image">
+            <img src="{{ asset('images/' . basename($product->image)) }}" alt="{{ $product->name }}" class="product-main-image">
         </div>
 
         <div class="product-info-area">
@@ -44,7 +44,6 @@
                 <dl class="product-meta-list">
                     <dt>カテゴリー：</dt>
                     <dd>
-
                         @if($product->categories->isEmpty())
                         未設定
                         @else

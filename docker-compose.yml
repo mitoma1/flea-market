@@ -1,7 +1,4 @@
 
-
- 
-
 services: # <-- このインデントレベル
   nginx: # <-- ここから他のサービスと同じインデントレベル（例：半角スペース2つ）
     image: nginx:1.21.1
@@ -17,6 +14,8 @@ services: # <-- このインデントレベル
     build: ./docker/php
     volumes:
       - ./src:/var/www/
+    ports:          # ここを追加
+      - "8000:8000"
 
   mysql: # <-- 他のサービスと同じインデントレベル
     image: mysql:8.0.26

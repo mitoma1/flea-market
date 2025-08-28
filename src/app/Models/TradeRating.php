@@ -9,7 +9,13 @@ class TradeRating extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['trade_id', 'product_id', 'rater_user_id', 'rated_user_id', 'rating'];
+    protected $fillable = [
+        'trade_id',
+        'product_id',
+        'rater_user_id',
+        'rated_user_id',
+        'rating'
+    ];
 
     public function trade()
     {
