@@ -13,6 +13,7 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 
 use App\Http\Controllers\TradeController;
+use App\Http\Controllers\RatingController;
 
 
 // 登録・ログイン関連
@@ -89,3 +90,4 @@ Route::put('/messages/{message}', [TradeController::class, 'updateMessage'])->na
 
 // メッセージ削除
 Route::delete('/messages/{message}', [TradeController::class, 'destroyMessage'])->name('messages.destroy');
+Route::get('/mypage/rating/latest', [RatingController::class, 'latest'])->name('mypage.rating.latest');

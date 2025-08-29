@@ -15,24 +15,14 @@
             <div class="mt-4 md:mt-0">
                 <h2 class="text-xl font-bold mb-1">{{ $user->name }}</h2>
 
-                {{-- 総合評価 --}}
-                <div class="flex items-center flex-wrap mb-1">
+                {{-- 総合評価（件数なし） --}}
+                <div id="user-stars" class="flex items-center flex-wrap mb-1">
                     @php
                     $stars = $user->averageRating();
-                    $ratingCount = $user->ratingsCount();
                     @endphp
-
                     @for ($i = 1; $i <= 5; $i++)
-                        <span class="{{ $i <= $stars ? 'text-yellow-400' : 'text-gray-300' }}">★</span>
+                        <span class="star {{ $i <= $stars ? 'text-yellow-400' : 'text-gray-300' }}" data-value="{{ $i }}">★</span>
                         @endfor
-
-                        <span class="ml-2 text-gray-600 text-sm">
-                            @if($ratingCount > 0)
-                            ({{ $ratingCount }}件)
-                            @else
-                            まだ評価はありません
-                            @endif
-                        </span>
                 </div>
             </div>
         </div>
@@ -90,6 +80,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // タブ切替
         const tabs = {
             selling: document.getElementById('selling-products'),
             purchased: document.getElementById('purchased-products'),
@@ -121,6 +112,28 @@
         tabButtons.selling.addEventListener('click', () => activate('selling'));
         tabButtons.purchased.addEventListener('click', () => activate('purchased'));
         tabButtons.trading.addEventListener('click', () => activate('trading'));
+
+        // 星のリアルタイム更新（例：サーバーから最新評価を取得）
+        async function fetchLatestRating() {
+            try {
+                const response = await fetch("{{ route('mypage.rating.latest', $user->id) }}");
+                const data = await response.json();
+                const starElements = document.querySelectorAll('#user-stars .star');
+                starElements.forEach((el, index) => {
+                    if (index < data.averageRating) {
+                        el.classList.add('text-yellow-400');
+                        el.classList.remove('text-gray-300');
+                    } else {
+                        el.classList.remove('text-yellow-400');
+                        el.classList.add('text-gray-300');
+                    }
+                });
+            } catch (e) {
+                console.error('最新評価の取得に失敗しました', e);
+            }
+        }
+
+        fetchLatestRating();
     });
 </script>
 @endsection

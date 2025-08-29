@@ -236,11 +236,21 @@
             });
         });
 
-        // 本文ローカルストレージ保持
+        // 本文ローカルストレージ保持 + エラーメッセージ消去
         const chatBody = document.getElementById('chatBody');
+        const errorBody = document.getElementById('errorBody');
         const storageKey = 'chat_body_' + "{{ $trade->id }}";
         if (localStorage.getItem(storageKey)) chatBody.value = localStorage.getItem(storageKey);
-        chatBody.addEventListener('input', () => localStorage.setItem(storageKey, chatBody.value));
+        chatBody.addEventListener('input', () => {
+            localStorage.setItem(storageKey, chatBody.value);
+
+            // 入力したらエラーメッセージを消す
+            if (errorBody) {
+                errorBody.textContent = '';
+                chatBody.classList.remove('border-red-500');
+                chatBody.classList.add('border-gray-300');
+            }
+        });
         chatBody.closest('form').addEventListener('submit', () => localStorage.removeItem(storageKey));
     });
 </script>

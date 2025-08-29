@@ -42,20 +42,28 @@ class ProfileController extends Controller
             $q->where('status', 'in_progress')
                 ->where(function ($q2) use ($userId) {
                     $q2->where('buyer_id', $userId)
-                        ->orWhereHas('product', fn($q3) => $q3->where('user_id', $userId));
+                        ->orWhereHas('product', function ($q3) use ($userId) {
+                            $q3->where('user_id', $userId);
+                        });
                 });
         })
-            ->with(['trade.messages' => fn($q) => $q->orderBy('created_at', 'asc')])
+            ->with(['trade.messages' => function ($q) {
+                $q->orderBy('created_at', 'asc');
+            }])
             ->get()
             ->map(function ($product) use ($userId) {
-                $product->unread_messages_count = optional($product->trade)
-                    ->messages
-                    ->where('user_id', '!=', $userId)
-                    ->where('is_read', false)
-                    ->count();
+                $messages = $product->trade ? $product->trade->messages : collect();
+                $product->unread_messages_count = $messages->filter(function ($m) use ($userId) {
+                    return $m->user_id != $userId && !$m->is_read;
+                })->count();
                 return $product;
             })
-            ->sortByDesc(fn($product) => optional($product->trade)->messages->max('created_at') ?? optional($product->trade)->created_at)
+            ->sortByDesc(function ($product) {
+                $lastMessage = $product->trade && $product->trade->messages->count()
+                    ? $product->trade->messages->max('created_at')
+                    : null;
+                return $lastMessage ?: ($product->trade ? $product->trade->created_at : null);
+            })
             ->values();
 
         return view('mypage.profile', compact(
@@ -109,6 +117,19 @@ class ProfileController extends Controller
         $user->building = $request->input('building');
         $user->save();
 
-        return redirect()->route('mypage.profile.show')->with('success', 'プロフィールを更新しました');
+        return redirect()->route('mypage.profile')->with('success', 'プロフィールを更新しました');
+    }
+
+    /**
+     * 最新評価を返す（PHP 7対応版）
+     */
+    public function latestRating(User $user)
+    {
+        // 例: ratings() は user が持つ評価リレーション
+        $latestRating = $user->ratings()->latest()->first();
+
+        return response()->json([
+            'averageRating' => $latestRating ? $latestRating->score : 0
+        ]);
     }
 }
