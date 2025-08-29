@@ -11,7 +11,7 @@
             <li>
                 <a href="{{ route('trades.show', $t->id) }}" class="block bg-white p-3 rounded-lg shadow hover:bg-gray-100">
                     <div class="flex items-center">
-                        <img src="{{ $t->product->image_url ?? 'https://via.placeholder.com/50x50' }}"
+                        <img src="{{ $t->product->image ? asset('images/' . basename($t->product->image)) : asset('images/default-product.png') }}"
                             alt="商品画像"
                             class="w-12 h-12 rounded mr-3 object-cover flex-shrink-0">
                         <div>
@@ -33,7 +33,7 @@
         {{-- 取引相手 --}}
         <div class="flex items-center mb-6">
             <div class="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center mr-3 overflow-hidden flex-shrink-0">
-                <img src="{{ $partner->profile_image_url ?? 'https://via.placeholder.com/64/cccccc/ffffff?text=User' }}"
+                <img src="{{ $partner->profile_image ? asset('images/' . basename($partner->profile_image)) : asset('images/default-profile.png') }}"
                     alt="相手画像"
                     class="w-full h-full object-cover">
             </div>
@@ -42,7 +42,7 @@
 
         {{-- 商品情報 --}}
         <div class="flex flex-col md:flex-row items-start md:items-center border-b pb-6 mb-6">
-            <img src="{{ $product->image_url ?? 'https://via.placeholder.com/150/cccccc/ffffff?text=Product' }}"
+            <img src="{{ $product->image ? asset('images/' . basename($product->image)) : asset('images/default-product.png') }}"
                 alt="商品画像"
                 class="w-full md:w-32 h-32 object-cover mr-0 md:mr-4 rounded-lg shadow flex-shrink-0 mb-4 md:mb-0">
             <div class="flex-1">
@@ -56,7 +56,7 @@
                 $isSeller = auth()->id() === $trade->product->user_id;
                 @endphp
 
-                {{-- 取引完了ボタン表示条件 --}}
+                {{-- 取引完了ボタン --}}
                 @if(($isBuyer && !$trade->buyer_completed) || ($isSeller && $trade->buyer_completed && !$trade->seller_completed))
                 <button type="button" id="completeTradeButton"
                     class="bg-red-500 text-white px-5 py-3 rounded hover:bg-red-600 font-semibold">
@@ -76,7 +76,7 @@
             <div class="flex {{ $isMe ? 'justify-end' : 'justify-start' }} items-start mb-2">
                 @if(!$isMe)
                 <div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center mr-2 overflow-hidden flex-shrink-0">
-                    <img src="{{ $sender->profile_image_url ?? 'https://via.placeholder.com/32/cccccc/ffffff?text=U' }}"
+                    <img src="{{ $sender->profile_image ? asset('images/' . basename($sender->profile_image)) : asset('images/default-profile.png') }}"
                         alt="アイコン"
                         class="w-full h-full object-cover">
                 </div>
@@ -86,9 +86,9 @@
                     <p class="text-sm font-bold mb-1 truncate">{{ $sender->name }}</p>
                     <div class="p-2 rounded-lg max-w-xs bg-gray-300 text-gray-900">
                         <p class="text-sm break-words">{{ $message->body }}</p>
-                        @if($message->image ?? false)
+                        @if($message->image)
                         <div class="mt-2">
-                            <img src="{{ asset('storage/' . $message->image) }}"
+                            <img src="{{ asset('images/' . basename($message->image)) }}"
                                 alt="メッセージ画像"
                                 class="rounded-lg max-h-40 object-cover">
                         </div>
@@ -109,7 +109,7 @@
 
                 @if($isMe)
                 <div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center ml-2 overflow-hidden flex-shrink-0">
-                    <img src="{{ auth()->user()->profile_image_url ?? 'https://via.placeholder.com/32/cccccc/ffffff?text=Me' }}"
+                    <img src="{{ auth()->user()->profile_image ? asset('images/' . basename(auth()->user()->profile_image)) : asset('images/default-profile.png') }}"
                         alt="自分のアイコン"
                         class="w-full h-full object-cover">
                 </div>
@@ -182,13 +182,8 @@
 
         function updateStarRating(rating) {
             starIcons.forEach((star, index) => {
-                if (index < rating) {
-                    star.classList.remove('text-gray-300');
-                    star.classList.add('text-yellow-400');
-                } else {
-                    star.classList.remove('text-yellow-400');
-                    star.classList.add('text-gray-300');
-                }
+                star.classList.toggle('text-yellow-400', index < rating);
+                star.classList.toggle('text-gray-300', index >= rating);
             });
             ratingInput.value = rating;
             currentRating = rating;
@@ -203,42 +198,38 @@
         });
 
         if (completeTradeButton) {
-            completeTradeButton.addEventListener('click', function() {
+            completeTradeButton.addEventListener('click', () => {
                 completionModal.classList.remove('hidden');
             });
         }
 
-        if (sendReviewButton && tradeCompletionForm) {
+        if (sendReviewButton) {
             sendReviewButton.addEventListener('click', function() {
-                completionModal.classList.add('hidden');
                 tradeCompletionForm.submit();
             });
         }
 
         if (completionModal) {
-            completionModal.addEventListener('click', function(event) {
-                if (event.target === completionModal) {
+            completionModal.addEventListener('click', function(e) {
+                if (e.target === completionModal) {
                     completionModal.classList.add('hidden');
                 }
             });
         }
 
         // メッセージ編集
-        const editButtons = document.querySelectorAll('.edit-message-btn');
-        editButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const body = this.dataset.body;
-                const id = this.dataset.id;
-                const newBody = prompt('メッセージを編集:', body);
+        document.querySelectorAll('.edit-message-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const newBody = prompt('メッセージを編集:', this.dataset.body);
                 if (newBody !== null && newBody !== '') {
                     const form = document.createElement('form');
                     form.method = 'POST';
-                    form.action = `/messages/${id}`;
+                    form.action = `/messages/${this.dataset.id}`;
                     form.innerHTML = `
-                @csrf
-                @method('PUT')
-                <input type="hidden" name="body" value="${newBody}">
-                `;
+<input type="hidden" name="_token" value="{{ csrf_token() }}">
+<input type="hidden" name="_method" value="PUT">
+<input type="hidden" name="body" value="${newBody}">
+`;
                     document.body.appendChild(form);
                     form.submit();
                 }
@@ -247,23 +238,10 @@
 
         // 本文ローカルストレージ保持
         const chatBody = document.getElementById('chatBody');
-        const errorBody = document.getElementById('errorBody');
-        const tradeId = "{{ $trade->id }}";
-        const storageKey = 'chat_body_' + tradeId;
-
-        if (localStorage.getItem(storageKey)) {
-            chatBody.value = localStorage.getItem(storageKey);
-        }
-
-        chatBody.addEventListener('input', function() {
-            localStorage.setItem(storageKey, chatBody.value);
-            if (errorBody) errorBody.textContent = '';
-        });
-
-        const form = chatBody.closest('form');
-        form.addEventListener('submit', function() {
-            localStorage.removeItem(storageKey);
-        });
+        const storageKey = 'chat_body_' + "{{ $trade->id }}";
+        if (localStorage.getItem(storageKey)) chatBody.value = localStorage.getItem(storageKey);
+        chatBody.addEventListener('input', () => localStorage.setItem(storageKey, chatBody.value));
+        chatBody.closest('form').addEventListener('submit', () => localStorage.removeItem(storageKey));
     });
 </script>
 @endsection

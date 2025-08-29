@@ -19,6 +19,7 @@ class TradeController extends Controller
     {
         $trade->load('product.user', 'buyer', 'messages.user');
 
+        // 取引相手を判定
         $partner = Auth::id() === $trade->product->user_id
             ? $trade->buyer
             : $trade->product->user;
@@ -31,9 +32,11 @@ class TradeController extends Controller
             ->where('rater_user_id', Auth::id())
             ->exists();
 
-        // 相手のユーザーが受けた評価の平均を取得（プロフィール用）
+        // 相手ユーザーの平均評価（プロフィール用）
         $partnerRating = TradeRating::where('rated_user_id', $partner->id)->avg('rating');
+        $partnerRatingRounded = $partnerRating !== null ? round($partnerRating) : null;
 
+        // サイドバー用の進行中取引
         $sidebarTrades = Trade::with('product', 'buyer')
             ->where(function ($query) {
                 $query->where('buyer_id', Auth::id())
@@ -50,7 +53,7 @@ class TradeController extends Controller
             'product',
             'alreadyRatedByMe',
             'sidebarTrades',
-            'partnerRating'
+            'partnerRatingRounded'
         ));
     }
 
@@ -110,6 +113,7 @@ class TradeController extends Controller
 
         $product = $trade->product;
 
+        // 評価されるユーザーIDを判定
         $ratedUserId = Auth::id() === $trade->buyer_id
             ? $product->user_id
             : $trade->buyer_id;
@@ -135,8 +139,6 @@ class TradeController extends Controller
         // 取引完了フラグの更新
         if (Auth::id() === $trade->buyer_id) {
             $trade->buyer_completed = true;
-
-            // 購入者完了時に出品者へメール送信
             Mail::to($product->user->email)->send(new TradeCompletedMail($trade));
         } else {
             $trade->seller_completed = true;
@@ -149,13 +151,14 @@ class TradeController extends Controller
 
         $trade->save();
 
-        // 相手のプロフィールの平均評価を更新
+        // 評価を受けたユーザーの平均評価を再計算して保存
         $ratedUser = User::find($ratedUserId);
-        $averageRating = TradeRating::where('rated_user_id', $ratedUserId)->avg('rating');
-        $ratedUser->average_rating = $averageRating; // users テーブルに average_rating カラムがある場合
-        $ratedUser->save();
+        if ($ratedUser) {
+            $averageRating = TradeRating::where('rated_user_id', $ratedUserId)->avg('rating');
+            $ratedUser->average_rating = $averageRating !== null ? round($averageRating) : null;
+            $ratedUser->save();
+        }
 
-        // 評価送信後は商品一覧画面へ遷移
         return redirect()->route('products.index')->with('success', '取引完了＆評価を送信しました');
     }
 }

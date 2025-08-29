@@ -4,9 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use App\Models\User;
 use App\Models\Product;
-use App\Models\Trade;
 
 class ProfileController extends Controller
 {
@@ -16,62 +15,54 @@ class ProfileController extends Controller
     public function show()
     {
         $user = Auth::user();
+        $userId = $user->id;
 
+        // -------------------------------
         // 出品商品（取引がまだ完了していないもの）
+        // -------------------------------
         $sellingProducts = $user->products()
-            ->whereDoesntHave('trade', function ($q) {
-                $q->where('status', 'completed');
-            })
-            ->latest()
-            ->get();
-
-        // 購入商品（取引完了かつ両者評価済み）
-        $purchasedProducts = $user->purchasedProducts()
             ->whereHas('trade', function ($q) {
-                $q->where('status', 'completed')
-                    ->where('buyer_completed', true)
-                    ->where('seller_completed', true);
-            })
+                $q->where('status', '!=', 'completed');
+            }, '<', 1) // tradeが無いものも含める
             ->latest()
             ->get();
 
-        // 取引中商品（購入者・出品者どちらでも関わる進行中の取引）
-        $tradingProducts = Product::whereHas('trade', function ($q) use ($user) {
+        // -------------------------------
+        // 購入商品（取引完了済み）
+        // -------------------------------
+        $purchasedProducts = Product::whereHas('trade', function ($q) use ($userId) {
+            $q->where('buyer_id', $userId)
+                ->where('status', 'completed');
+        })->latest()->get();
+
+        // -------------------------------
+        // 取引中商品（自分が出品 or 購入している進行中の取引）
+        // -------------------------------
+        $tradingProducts = Product::whereHas('trade', function ($q) use ($userId) {
             $q->where('status', 'in_progress')
-                ->where(function ($q2) use ($user) {
-                    $q2->where('buyer_id', $user->id)
-                        ->orWhereHas('product', fn($q3) => $q3->where('user_id', $user->id));
+                ->where(function ($q2) use ($userId) {
+                    $q2->where('buyer_id', $userId)
+                        ->orWhereHas('product', fn($q3) => $q3->where('user_id', $userId));
                 });
         })
             ->with(['trade.messages' => fn($q) => $q->orderBy('created_at', 'asc')])
             ->get()
-            ->map(function ($product) use ($user) {
+            ->map(function ($product) use ($userId) {
                 $product->unread_messages_count = optional($product->trade)
                     ->messages
-                    ->where('user_id', '!=', $user->id)
+                    ->where('user_id', '!=', $userId)
                     ->where('is_read', false)
                     ->count();
                 return $product;
             })
-            ->sortByDesc(
-                fn($product) => optional($product->trade)
-                    ->messages
-                    ->max('created_at') ?? optional($product->trade)->created_at
-            )
+            ->sortByDesc(fn($product) => optional($product->trade)->messages->max('created_at') ?? optional($product->trade)->created_at)
             ->values();
-
-        // 平均評価
-        $ratings = $user->receivedRatings ?? collect();
-        $averageRating = round($ratings->avg('rating') ?? 0);
-        $ratingCount = $ratings->count();
 
         return view('mypage.profile', compact(
             'user',
             'sellingProducts',
             'purchasedProducts',
-            'tradingProducts',
-            'averageRating',
-            'ratingCount'
+            'tradingProducts'
         ));
     }
 
@@ -100,10 +91,16 @@ class ProfileController extends Controller
         ]);
 
         if ($request->hasFile('avatar')) {
-            if ($user->profile_image && Storage::disk('public')->exists($user->profile_image)) {
-                Storage::disk('public')->delete($user->profile_image);
+            // 古い画像削除
+            if ($user->profile_image && file_exists(public_path('images/' . basename($user->profile_image)))) {
+                unlink(public_path('images/' . basename($user->profile_image)));
             }
-            $user->profile_image = $request->file('avatar')->store('profile_images', 'public');
+
+            // 新しい画像保存
+            $file = $request->file('avatar');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('images'), $filename);
+            $user->profile_image = 'images/' . $filename;
         }
 
         $user->name     = $request->input('username');

@@ -1,42 +1,50 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto px-4 py-6">
+<div class="max-w-screen-xl mx-auto px-4 py-6">
 
     {{-- プロフィール --}}
-    <div class="flex items-center justify-between border-b pb-6 mb-6">
+    <div class="flex flex-col md:flex-row items-center justify-between border-b pb-6 mb-6">
         <div class="flex items-center space-x-6">
-            <div class="w-24 h-24 rounded-full bg-gray-300 overflow-hidden">
-                <img src="{{ $user->profile_image_url ? asset('images/' . basename($user->profile_image_url)) : asset('images/default-profile.png') }}" alt="プロフィール画像" class="w-full h-full object-cover">
+            {{-- プロフィール画像 --}}
+            <div class="w-24 h-24 rounded-full bg-gray-300 overflow-hidden flex-shrink-0">
+                <img src="{{ $user->profile_image ? asset('images/' . basename($user->profile_image)) : asset('images/default-profile.png') }}"
+                    alt="プロフィール画像" class="w-full h-full object-cover">
             </div>
 
-            <div>
+            <div class="mt-4 md:mt-0">
                 <h2 class="text-xl font-bold mb-1">{{ $user->name }}</h2>
-                <div class="flex items-center">
+
+                {{-- 総合評価 --}}
+                <div class="flex items-center flex-wrap mb-1">
                     @php
-                    // 平均評価を四捨五入
-                    $averageRatingRounded = isset($averageRating) ? round($averageRating) : 0;
-                    $ratingCount = isset($ratingCount) ? $ratingCount : 0;
+                    $stars = $user->averageRating();
+                    $ratingCount = $user->ratingsCount();
                     @endphp
+
                     @for ($i = 1; $i <= 5; $i++)
-                        <span class="{{ $i <= $averageRatingRounded ? 'text-yellow-400' : 'text-gray-300' }}">★</span>
+                        <span class="{{ $i <= $stars ? 'text-yellow-400' : 'text-gray-300' }}">★</span>
                         @endfor
-                        @if($ratingCount > 0)
-                        <span class="ml-2 text-gray-600 text-sm">({{ $ratingCount }}件)</span>
-                        @else
-                        <span class="ml-2 text-gray-400 text-sm">まだ評価はありません</span>
-                        @endif
+
+                        <span class="ml-2 text-gray-600 text-sm">
+                            @if($ratingCount > 0)
+                            ({{ $ratingCount }}件)
+                            @else
+                            まだ評価はありません
+                            @endif
+                        </span>
                 </div>
             </div>
         </div>
 
-        <a href="{{ route('mypage.profile.edit') }}" class="border border-red-500 text-red-500 px-4 py-2 rounded hover:bg-red-50 transition">
+        {{-- プロフィール編集 --}}
+        <a href="{{ route('mypage.profile.edit') }}" class="mt-4 md:mt-0 border border-red-500 text-red-500 px-4 py-2 rounded hover:bg-red-50 transition">
             プロフィールを編集
         </a>
     </div>
 
     {{-- タブ --}}
-    <div class="flex space-x-6 border-b mb-6">
+    <div class="flex flex-wrap space-x-4 border-b mb-6">
         <button id="selling-tab" class="pb-2 border-b-2 border-red-500 text-red-500 font-bold">出品商品</button>
         <button id="purchased-tab" class="pb-2 border-b-2 border-transparent text-gray-600 hover:text-black">購入商品</button>
         <button id="trading-tab" class="pb-2 border-b-2 border-transparent text-gray-600 hover:text-black flex items-center">
@@ -50,48 +58,20 @@
     </div>
 
     {{-- 商品表示 --}}
-    <div id="selling-products" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-        @forelse ($sellingProducts as $product)
+    @foreach (['selling' => $sellingProducts, 'purchased' => $purchasedProducts, 'trading' => $tradingProducts] as $key => $products)
+    <div id="{{ $key }}-products" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 {{ $key !== 'selling' ? 'hidden' : '' }}">
+        @forelse ($products as $product)
         <div class="block rounded overflow-hidden shadow hover:shadow-lg transition relative">
             <a href="{{ $product->trade ? route('trades.show', $product->trade->id) : '#' }}" class="{{ $product->trade ? '' : 'pointer-events-none opacity-50' }}">
-                <img src="{{ $product->image ? asset('images/' . basename($product->image)) : asset('images/default-product.png') }}" alt="商品画像" class="w-full h-48 object-cover">
-                <div class="p-2">
-                    <p class="font-semibold">{{ $product->name }}</p>
-                    <p class="text-sm text-gray-600">¥{{ number_format($product->price) }}</p>
-                </div>
-            </a>
-        </div>
-        @empty
-        <p class="text-center col-span-full text-gray-500">出品した商品はありません。</p>
-        @endforelse
-    </div>
+                <img src="{{ $product->image ? asset('images/' . basename($product->image)) : asset('images/default-product.png') }}"
+                    alt="商品画像" class="w-full h-48 object-cover">
 
-    <div id="purchased-products" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 hidden">
-        @forelse ($purchasedProducts as $product)
-        <div class="block rounded overflow-hidden shadow hover:shadow-lg transition relative">
-            <a href="{{ $product->trade ? route('trades.show', $product->trade->id) : '#' }}" class="{{ $product->trade ? '' : 'pointer-events-none opacity-50' }}">
-                <img src="{{ $product->image ? asset('images/' . basename($product->image)) : asset('images/default-product.png') }}" alt="商品画像" class="w-full h-48 object-cover">
-                <div class="p-2">
-                    <p class="font-semibold">{{ $product->name }}</p>
-                    <p class="text-sm text-gray-600">¥{{ number_format($product->price) }}</p>
-                </div>
-            </a>
-        </div>
-        @empty
-        <p class="text-center col-span-full text-gray-500">購入した商品はありません。</p>
-        @endforelse
-    </div>
-
-    <div id="trading-products" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 hidden">
-        @forelse ($tradingProducts as $product)
-        <div class="block rounded overflow-hidden shadow hover:shadow-lg transition relative">
-            <a href="{{ $product->trade ? route('trades.show', $product->trade->id) : '#' }}" class="{{ $product->trade ? '' : 'pointer-events-none opacity-50' }}">
-                <img src="{{ $product->image ? asset('images/' . basename($product->image)) : asset('images/default-product.png') }}" alt="商品画像" class="w-full h-48 object-cover">
-                @if($product->unread_messages_count > 0)
+                @if($key === 'trading' && $product->unread_messages_count > 0)
                 <span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
                     {{ $product->unread_messages_count }}
                 </span>
                 @endif
+
                 <div class="p-2">
                     <p class="font-semibold">{{ $product->name }}</p>
                     <p class="text-sm text-gray-600">¥{{ number_format($product->price) }}</p>
@@ -99,9 +79,12 @@
             </a>
         </div>
         @empty
-        <p class="text-center col-span-full text-gray-500">取引中の商品はありません。</p>
+        <p class="text-center col-span-full text-gray-500">
+            {{ $key === 'selling' ? '出品した商品はありません' : ($key === 'purchased' ? '購入した商品はありません' : '取引中の商品はありません') }}。
+        </p>
         @endforelse
     </div>
+    @endforeach
 
 </div>
 
@@ -134,6 +117,7 @@
         }
 
         activate('selling');
+
         tabButtons.selling.addEventListener('click', () => activate('selling'));
         tabButtons.purchased.addEventListener('click', () => activate('purchased'));
         tabButtons.trading.addEventListener('click', () => activate('trading'));
