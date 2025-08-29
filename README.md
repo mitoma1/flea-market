@@ -24,6 +24,17 @@ DB_PASSWORD=laravel_pass
 #使用技術(実行環境) 
 PHP7.4.9 Laravel8.83.8 MySQL8.0.26
 
+## リポジトリ取得方法
+
+- まだリポジトリを持っていない場合：
+```bash
+git clone https://github.com/mitoma1/flea-market.git
+既にリポジトリを持っている場合は最新版を取得：
+
+bash
+コードをコピーする
+git pull origin main
+
 ## メール認証
 
 ユーザー登録後にメールアドレス認証が必須です。  
